@@ -1,0 +1,2185 @@
+<title>Comoara Piratului</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Nunito:wght@400;600;700;800&family=Cutive+Mono&display=swap">
+<style>
+/* ═══ Comoara Piratului · masa de hărți a căpitanului ═══
+   Layout pe înălțimea ecranului: pagina nu derulează niciodată.
+   Panoul are trei zone — antet, conținut, punte de comandă. ═══ */
+:root{
+  color-scheme: dark;
+  --abis:#08202f; --adanc:#10394f; --val:#1b5570;
+  --pergament:#f0e2c0; --pergament-2:#e5d3aa; --umbra:#c2a87b;
+  --cerneala:#33200f; --cerneala-2:#71512f;
+  --alama:#dfa235; --alama-2:#a06f16;
+  --fanion:#b53f2c; --alge:#2f7f5f;
+  --spuma:#e9f2f2; --spuma-2:#9fb9c4;
+  --r:14px;
+  --gx:clamp(12px,2.2vw,24px);
+  --gy:clamp(8px,1.5vh,16px);
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --corp:"Nunito","Segoe UI",system-ui,sans-serif;
+  --log:"Cutive Mono","Courier New",monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; overflow:hidden;
+  background:var(--abis); color:var(--spuma);
+  font-family:var(--corp);
+  font-size:clamp(14px,1.55vh,17px); line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+#mare{position:fixed;inset:0;z-index:0;display:block}
+#app{
+  position:relative;z-index:1;
+  height:100vh; height:100dvh;
+  max-width:960px;margin:0 auto;
+  padding:clamp(6px,1.2vh,14px) clamp(8px,2vw,18px);
+  display:flex;flex-direction:column;gap:clamp(6px,1.1vh,12px);
+}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;font-weight:900;letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--alama);outline-offset:2px;border-radius:6px}
+
+/* ——— balustrada corăbiei ——— */
+.rail{
+  flex:none;display:flex;align-items:center;gap:7px;
+  padding:5px 7px;border-radius:999px;
+  background:linear-gradient(180deg,#3a2a17,#241708);
+  border:1px solid #543c1c;
+  box-shadow:0 2px 0 #0004,inset 0 1px 0 #ffffff1a;
+}
+.medalion{
+  width:clamp(28px,4vh,36px);height:clamp(28px,4vh,36px);flex:none;
+  display:grid;place-items:center;font-size:clamp(15px,2.2vh,19px);
+  border-radius:50%;background:radial-gradient(circle at 30% 25%,#f6cf7a,var(--alama-2));
+  box-shadow:inset 0 0 0 2px #2e1e0a;
+}
+.nume{font-family:var(--display);font-weight:700;font-size:.94rem;color:#f4dfae;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:30vw}
+.rail .spatiu{flex:1}
+.contor{
+  display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;
+  background:#00000038;border:1px solid #6b4e22;color:#f2d79a;
+  font-family:var(--log);font-size:.86rem;font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.mic-btn{
+  flex:none;min-width:34px;padding:5px 10px;border-radius:999px;
+  background:#00000038;border:1px solid #6b4e22;color:#f2d79a;font-weight:700;font-size:.84rem;
+  white-space:nowrap;transition:background .15s;
+}
+.mic-btn:hover{background:#00000060}
+.mic-btn.pornit{background:#dfa23533;border-color:var(--alama)}
+@media (max-width:640px){ .mic-btn .cuv{display:none} }
+
+/* ——— foaia de pergament: trei zone ——— */
+.foaie{
+  flex:1;min-height:0;position:relative;border-radius:var(--r);
+  display:flex;flex-direction:column;
+  background:
+    radial-gradient(120% 90% at 12% 0%,#fbf0d5 0%,rgba(251,240,213,0) 55%),
+    radial-gradient(90% 70% at 96% 100%,#d9c194 0%,rgba(217,193,148,0) 60%),
+    var(--pergament);
+  color:var(--cerneala);
+  border:1px solid var(--umbra);
+  box-shadow:0 18px 40px -18px #000b;
+}
+.foaie::after{content:"";position:absolute;inset:6px;border:1px dashed #b79a6c88;border-radius:calc(var(--r) - 5px);pointer-events:none;z-index:2}
+.cap{flex:none;padding:var(--gy) var(--gx) 0;position:relative;z-index:1}
+.corp{
+  flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;
+  padding:var(--gy) var(--gx);
+  display:flex;flex-direction:column;gap:clamp(7px,1.3vh,14px);
+  position:relative;z-index:1;
+  scrollbar-width:thin;scrollbar-color:#c2a87b transparent;
+}
+.corp::-webkit-scrollbar{width:8px}
+.corp::-webkit-scrollbar-thumb{background:#c2a87b;border-radius:99px}
+.corp.plin{padding:0 10px 6px;overflow:hidden}
+.pod{
+  flex:none;padding:clamp(7px,1.2vh,12px) var(--gx);
+  border-top:1px dashed #b79a6c99;
+  display:flex;gap:9px;flex-wrap:wrap;align-items:center;
+  position:relative;z-index:1;
+}
+.eticheta{font-family:var(--log);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--cerneala-2)}
+.titlu{font-size:clamp(1.25rem,3.4vh,2rem);line-height:1.1;margin:1px 0 0}
+.subtitlu{font-family:var(--corp);font-weight:600;color:var(--cerneala-2);margin-top:4px}
+.sus{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+hr.val{border:0;height:7px;margin:8px 0 0;opacity:.45;
+  background:repeating-linear-gradient(90deg,transparent 0 6px,#8a6b3f 6px 7px)}
+
+/* ——— personajul care vorbește ——— */
+.vorbitor{display:flex;gap:10px;align-items:flex-start}
+.chip{
+  width:clamp(34px,5.4vh,50px);height:clamp(34px,5.4vh,50px);flex:none;
+  display:grid;place-items:center;font-size:clamp(18px,3vh,26px);border-radius:11px;
+  background:linear-gradient(160deg,#fff6e0,#dfc99a);border:1px solid var(--umbra);
+  box-shadow:0 3px 0 #b99a6b;
+}
+.bula{flex:1;min-width:0}
+.bula .cine{font-family:var(--display);font-weight:700;font-size:.9rem;color:var(--alama-2)}
+.bula p + p{margin-top:7px}
+.intrebare{font-family:var(--display);font-weight:700;font-size:clamp(1rem,2.5vh,1.32rem);line-height:1.25;text-wrap:balance;margin-top:1px}
+
+/* ——— opțiuni ——— */
+.optiuni{display:grid;gap:8px}
+.opt{
+  display:flex;gap:10px;align-items:center;text-align:left;width:100%;
+  padding:clamp(8px,1.4vh,13px) 14px;border-radius:10px;
+  background:#fffaf0;border:2px solid var(--umbra);color:var(--cerneala);
+  font-weight:600;line-height:1.3;
+  transition:transform .12s,border-color .12s,background .12s,box-shadow .12s;
+  box-shadow:0 3px 0 #c9b184;
+}
+.opt:hover:not(:disabled){transform:translateY(-2px);border-color:var(--alama-2);box-shadow:0 5px 0 #c9b184}
+.opt:active:not(:disabled){transform:translateY(1px);box-shadow:0 1px 0 #c9b184}
+.opt:disabled{cursor:default;opacity:.62}
+.opt .litera{width:26px;height:26px;flex:none;display:grid;place-items:center;border-radius:7px;background:var(--pergament-2);font-family:var(--log);font-size:.86rem;color:var(--cerneala-2)}
+.opt.bun{background:#e4f4ea;border-color:var(--alge);box-shadow:0 3px 0 #2f7f5f66;opacity:1}
+.opt.bun .litera{background:var(--alge);color:#fff}
+.opt.rau{background:#fae7e3;border-color:var(--fanion);box-shadow:0 3px 0 #b53f2c55}
+.opt.rau .litera{background:var(--fanion);color:#fff}
+
+/* ——— butoane ——— */
+.buton{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:clamp(9px,1.5vh,13px) clamp(14px,2.4vw,24px);border-radius:10px;
+  font-family:var(--display);font-weight:700;font-size:clamp(.92rem,1.9vh,1.02rem);
+  background:linear-gradient(180deg,#f3ba52,var(--alama));color:#3a2409;
+  border:1px solid var(--alama-2);box-shadow:0 4px 0 var(--alama-2);
+  transition:transform .1s,box-shadow .1s;
+}
+.buton:hover{transform:translateY(-1px);box-shadow:0 5px 0 var(--alama-2)}
+.buton:active{transform:translateY(3px);box-shadow:0 1px 0 var(--alama-2)}
+.buton.linistit{background:#fffaf0;color:var(--cerneala);border-color:var(--umbra);box-shadow:0 4px 0 var(--umbra)}
+.buton.linistit:active{box-shadow:0 1px 0 var(--umbra)}
+.buton:disabled{opacity:.42;cursor:default;transform:none;box-shadow:0 4px 0 var(--alama-2)}
+.actiuni{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+
+/* ——— verdict ——— */
+.verdict{
+  display:flex;gap:10px;align-items:flex-start;padding:clamp(8px,1.4vh,13px) 14px;border-radius:10px;
+  border-left:5px solid;animation:intra .28s ease-out;
+}
+.verdict .sm{font-size:19px;line-height:1.1}
+.verdict b{display:block;font-family:var(--display)}
+.verdict.da{background:#e4f4ea;border-color:var(--alge);color:#1d4d39}
+.verdict.nu{background:#fbeae6;border-color:var(--fanion);color:#7c2718}
+.verdict.info{background:#f6ecd6;border-color:var(--alama-2);color:#5b4218}
+@keyframes intra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ——— grila de hartă ——— */
+.zona-harta{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center}
+.grila{display:grid;gap:4px;background:#dcc79b;padding:7px;border-radius:11px;border:1px solid var(--umbra)}
+.grila .cap2{display:grid;place-items:center;font-family:var(--log);font-size:.74rem;color:var(--cerneala-2);min-width:18px}
+.celula{
+  width:clamp(30px,min(8vw,5.6vh),52px);aspect-ratio:1;display:grid;place-items:center;
+  font-size:clamp(14px,3vh,21px);
+  background:#f7edd6;border:1px solid #cbb489;border-radius:7px;transition:transform .1s,background .12s;
+}
+.celula:hover:not(:disabled){background:#fff;transform:scale(1.06)}
+.celula.plecare{background:#f6dfae;box-shadow:inset 0 0 0 2px var(--alama)}
+.celula.corect{background:#b8e3c8;box-shadow:inset 0 0 0 3px var(--alge)}
+.celula.gresit{background:#f3c8bf;box-shadow:inset 0 0 0 3px var(--fanion)}
+.roza{width:clamp(64px,11vh,104px);flex:none;text-align:center;font-family:var(--log);font-size:.68rem;color:var(--cerneala-2)}
+.roza svg{width:100%;height:auto;display:block}
+
+/* ——— cod ——— */
+.afisaj{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.slot{
+  min-width:clamp(30px,5vh,44px);height:clamp(38px,6vh,54px);padding:0 7px;
+  display:grid;place-items:center;border-radius:8px;
+  background:#2c1c0e;color:#f6d894;font-family:var(--log);font-size:clamp(1rem,2.6vh,1.45rem);
+  border:1px solid #000;box-shadow:inset 0 3px 8px #0009;
+}
+.slot.gol{color:#7e653f}
+.taste{display:grid;grid-template-columns:repeat(auto-fit,minmax(48px,1fr));gap:6px;max-width:330px;margin:0 auto;width:100%}
+.taste.late{max-width:500px}
+.tasta{
+  padding:clamp(7px,1.5vh,13px) 0;border-radius:9px;background:#fffaf0;border:2px solid var(--umbra);
+  font-family:var(--log);font-size:clamp(.95rem,2.2vh,1.18rem);color:var(--cerneala);box-shadow:0 3px 0 var(--umbra);
+}
+.tasta:hover{background:#fff}
+.tasta:active{transform:translateY(2px);box-shadow:0 1px 0 var(--umbra)}
+.cifru{display:grid;grid-template-columns:repeat(auto-fit,minmax(54px,1fr));gap:6px;padding:9px;border-radius:10px;background:#f7edd6;border:1px dashed var(--umbra)}
+.cifru div{text-align:center;font-family:var(--log);font-size:.9rem}
+.cifru b{display:block;font-size:clamp(1rem,2.4vh,1.3rem);color:var(--alama-2)}
+
+/* ——— memorie / ordine ——— */
+.memorie{display:grid;grid-template-columns:repeat(auto-fit,minmax(60px,1fr));gap:8px;max-width:400px;margin:0 auto;width:100%}
+.tile{
+  aspect-ratio:1;display:grid;place-items:center;font-size:clamp(20px,4.4vh,32px);border-radius:12px;
+  background:#f7edd6;border:2px solid var(--umbra);box-shadow:0 3px 0 var(--umbra);
+  transition:transform .12s,filter .12s,background .12s;
+}
+.tile:hover:not(:disabled){transform:translateY(-2px)}
+.tile.aprins{background:var(--alama);transform:scale(1.09);filter:brightness(1.12)}
+.sir-ales{display:flex;gap:6px;justify-content:center;min-height:26px;font-size:clamp(17px,3.4vh,25px);letter-spacing:2px}
+
+/* ——— peliculă ——— */
+.film{
+  flex:1;min-height:0;position:relative;border-radius:11px;overflow:hidden;
+  background:#04121d;border:1px solid #2f6a86;box-shadow:0 14px 30px -18px #000c;
+}
+.film canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.film .bara-f{position:absolute;left:0;top:0;height:3px;width:0;background:var(--alama);box-shadow:0 0 8px #dfa235aa;z-index:3}
+.film .sari{
+  position:absolute;top:9px;right:9px;z-index:3;padding:5px 12px;border-radius:999px;
+  background:#0a2434d9;border:1px solid #3d7a95;color:#dbeaf1;font-size:.8rem;font-weight:800;
+}
+.film .sari:hover{background:#0f3d55}
+.subt{
+  position:absolute;left:0;right:0;bottom:0;z-index:2;
+  padding:clamp(20px,5vh,40px) clamp(12px,2.4vw,20px) clamp(9px,1.6vh,16px);
+  background:linear-gradient(180deg,rgba(4,18,29,0),rgba(4,18,29,.7) 42%,rgba(4,18,29,.93));
+  pointer-events:none;
+}
+.subt .cine2{font-family:var(--display);font-weight:700;font-size:.8rem;color:var(--alama);margin-bottom:1px}
+.subt p{color:#f4eddd;font-size:clamp(.9rem,2.1vh,1.1rem);line-height:1.35;text-shadow:0 2px 8px #000c;max-width:62ch}
+.subt.multi{overflow:auto;max-height:82%}
+.subt.multi p + .cine2{margin-top:6px}
+
+/* ——— harta insulelor ——— */
+.chart{
+  flex:1;min-height:0;position:relative;border-radius:11px;overflow:hidden;
+  background:radial-gradient(120% 100% at 30% 10%,#1a5a76,#0c2c3f 70%);border:1px solid #2f6a86;
+}
+.chart svg.ruta{position:absolute;inset:0;width:100%;height:100%}
+.insula{position:absolute;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;width:clamp(70px,11vw,112px)}
+.pin{
+  width:clamp(34px,6.4vh,56px);height:clamp(34px,6.4vh,56px);display:grid;place-items:center;
+  font-size:clamp(17px,3.4vh,28px);border-radius:50%;
+  background:radial-gradient(circle at 32% 26%,#fdf1d4,#d9bd85);border:2px solid #8a6b3f;
+  box-shadow:0 6px 14px #0007;transition:transform .15s;position:relative;
+}
+.insula:hover .pin{transform:scale(1.08)}
+.insula .et{font-family:var(--log);font-size:clamp(.58rem,1.3vh,.72rem);color:#d9ecf2;background:#08202fcc;padding:1px 6px;border-radius:999px;white-space:nowrap;border:1px solid #2f6a86}
+.insula.blocata{cursor:default}
+.insula.blocata .pin{filter:grayscale(.75) brightness(.6);border-color:#4d5f68;box-shadow:none}
+.insula.blocata .et{opacity:.55}
+.insula.gata .pin{box-shadow:0 0 0 4px #2f7f5f,0 6px 14px #0007}
+.insula.acum .pin{animation:puls 1.8s ease-in-out infinite;box-shadow:0 0 0 4px var(--alama),0 6px 18px #000}
+@keyframes puls{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.bifa{position:absolute;top:-6px;right:-6px;font-size:15px;filter:drop-shadow(0 1px 2px #000)}
+.corabie{position:absolute;font-size:clamp(16px,2.8vh,24px);transform:translate(-50%,-50%);transition:left .9s ease-in-out,top .9s ease-in-out;filter:drop-shadow(0 2px 3px #0009)}
+
+/* ——— colecție / jurnal ——— */
+.colectie{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.obiect{display:grid;justify-items:center;gap:3px;padding:9px 5px;border-radius:10px;text-align:center;background:#f7edd6;border:1px dashed var(--umbra);font-size:.73rem;font-weight:700;color:var(--cerneala-2);line-height:1.2}
+.obiect .ic{font-size:25px}
+.obiect.gol{opacity:.42}
+.indicii{display:grid;gap:6px}
+.indiciu{display:flex;gap:9px;align-items:center;padding:8px 11px;border-radius:9px;background:#f7edd6;border-left:5px solid var(--alama);font-family:var(--log);font-size:.9rem;color:var(--cerneala)}
+.indiciu .nr{width:27px;height:27px;flex:none;display:grid;place-items:center;border-radius:7px;background:var(--alama-2);color:#fff5dd;font-size:1rem}
+.insigne{display:flex;gap:7px;flex-wrap:wrap}
+.insigna{display:flex;gap:6px;align-items:center;padding:5px 11px;border-radius:999px;background:#f6dfae;border:1px solid var(--alama-2);font-weight:800;font-size:.8rem;color:#5b4218}
+.insigna.gol{background:#eadfc4;border-style:dashed;border-color:var(--umbra);color:#9a8763}
+
+/* ——— fereastră ——— */
+#voal:empty{display:none}
+.voal{position:fixed;inset:0;z-index:20;background:#04141fe0;display:grid;place-items:center;padding:12px}
+.voal .foaie{max-width:620px;width:100%;max-height:94vh;flex:none;height:min(94vh,760px)}
+.inchide{position:absolute;top:8px;right:10px;z-index:3;width:32px;height:32px;border-radius:50%;background:#00000012;font-size:18px;line-height:1}
+.inchide:hover{background:#00000026}
+
+/* ——— diverse ——— */
+.mica{font-size:.84rem;color:var(--cerneala-2)}
+.tag{display:inline-flex;gap:5px;align-items:center;padding:2px 9px;border-radius:999px;background:#f6dfae;border:1px solid var(--umbra);font-family:var(--log);font-size:.74rem;color:var(--cerneala-2);white-space:nowrap}
+.avatare{display:flex;gap:7px;flex-wrap:wrap}
+.av{width:clamp(40px,6.4vh,54px);height:clamp(40px,6.4vh,54px);border-radius:12px;display:grid;place-items:center;font-size:clamp(20px,3.6vh,26px);background:#fffaf0;border:2px solid var(--umbra);box-shadow:0 3px 0 var(--umbra)}
+.av:hover{transform:translateY(-2px)}
+.av.ales{background:var(--alama);border-color:var(--alama-2);box-shadow:0 3px 0 var(--alama-2)}
+input.text{width:100%;padding:10px 13px;border-radius:9px;border:2px solid var(--umbra);background:#fffaf0;color:var(--cerneala);font-family:var(--display);font-weight:700;font-size:1.02rem}
+input.text:focus{outline:none;border-color:var(--alama-2)}
+.nivele{display:grid;gap:8px}
+.nivel{text-align:left;padding:clamp(8px,1.5vh,14px) 15px;border-radius:11px;background:#fffaf0;border:2px solid var(--umbra);box-shadow:0 3px 0 var(--umbra);display:flex;gap:11px;align-items:center}
+.nivel.ales{background:#f6dfae;border-color:var(--alama-2);box-shadow:0 3px 0 var(--alama-2)}
+.nivel b{font-family:var(--display);display:block;font-size:1.02rem}
+.nivel .ic{font-size:clamp(20px,3.6vh,27px)}
+.bara{height:8px;border-radius:999px;background:#00000022;overflow:hidden;border:1px solid var(--umbra)}
+.bara i{display:block;height:100%;background:linear-gradient(90deg,var(--alama),#f0c96b);transition:width .5s}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+.stat div{padding:9px;border-radius:9px;background:#f7edd6;border:1px solid var(--umbra);text-align:center}
+.stat b{display:block;font-family:var(--display);font-size:clamp(1.15rem,3vh,1.6rem);line-height:1.05;color:var(--alama-2);font-variant-numeric:tabular-nums}
+.stat span{font-size:.74rem;color:var(--cerneala-2)}
+.lista-voci{display:grid;gap:6px}
+.voce-op{display:flex;gap:9px;align-items:center;text-align:left;padding:9px 12px;border-radius:9px;background:#fffaf0;border:2px solid var(--umbra);font-weight:600;font-size:.9rem}
+.voce-op.ales{background:#f6dfae;border-color:var(--alama-2)}
+.voce-op small{display:block;font-family:var(--log);font-size:.72rem;color:var(--cerneala-2)}
+.conf{position:fixed;top:-14px;width:10px;height:14px;z-index:30;pointer-events:none;border-radius:2px}
+@keyframes cade{to{transform:translateY(104vh) rotate(720deg);opacity:.15}}
+.scut{animation:scutura .32s}
+@keyframes scutura{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+</style>
+
+<canvas id="mare" aria-hidden="true"></canvas>
+<main id="app"></main>
+<div id="voal"></div>
+
+<script>
+/* ═══════════ PERSONAJE ═══════════ */
+var COCO={n:'Coco, papagalul',e:'🦜'};
+var PESCARUS={n:'Un pescăruș grăbit',e:'🐦'};
+var ECOU={n:'Ecoul peșterii',e:'🕯️'};
+var NEGUSTOR={n:'Zdrențărosu, negustorul',e:'🎩'};
+var SIRENA={n:'Sirena Maré',e:'🧜'};
+var PUSTNIC={n:'Bătrânul Cenușă',e:'🧙'};
+var BUNIC={n:'Căpitanul Barbă-Sură',e:'🧔'};
+var VANT={n:'Vântul mării',e:'🌬️'};
+
+var INSULE=[];
+
+/* ═══════════ INSULA 1 · INSULA PAPAGALULUI ═══════════ */
+INSULE.push({
+  nume:'Insula Papagalului', e:'🦜', x:12, y:70,
+  intro:[
+    {t:'film',dur:26,
+      cadre:[{pana:11,scena:'mare',par:{paleta:'zori',tinta:'palmier',tx:.86,crestere:true,plecare:true,cx:.4}},
+             {pana:26,scena:'plaja',par:{paleta:'zi',mers:true}}],
+      replici:[
+        {t:0,cine:VANT,x:'Ridici ancora. Portul rămâne în urmă și «Steaua Mării» iese în larg.'},
+        {t:5.5,cine:VANT,x:'Vântul e bun. La orizont crește o pată verde: prima insulă.'},
+        {t:11.5,cine:VANT,x:'Cobori pe nisipul alb ca zahărul. Apa e caldă și liniștită.'},
+        {t:15.5,cine:VANT,x:'Mergi pe plajă cu harta în mână. Palmierii foșnesc deasupra ta...'},
+        {t:19.5,cine:COCO,x:'— CRA! Ceva verde îți taie calea și aterizează pe o creangă, chiar în fața ta.'},
+        {t:22.5,cine:COCO,x:'— Eu sunt Coco, păzitorul insulei. Aici nu trece nimeni cu sabia. Se trece doar cu mintea.'}],
+      actori:[{p:'papagal',t0:18.6,t1:20.6,from:[1.15,.12],to:[.66,.34],s:126,arc:.12,inclina:true}]}
+  ],
+  pasi:[
+    {t:'harta',cat:'nav',cine:COCO,
+      q:'— Comoara mea mică e îngropată pe plajă. Pornește de la PALMIER 🌴 și mergi 2 pași spre EST, apoi 1 pas spre NORD. Apasă pătratul unde sapi!',
+      cols:['A','B','C','D'],rows:4,plecare:'B2',marci:{A4:'🌊',D4:'🐚'},ras:'D1',
+      hint:'Nordul e SUS, sudul e JOS. Estul e la DREAPTA, vestul la STÂNGA. Numără pas cu pas, nu sări.',
+      invat:'Pe hartă mergi mereu pas cu pas și numeri cu degetul. Așa nu te pierzi niciodată.',
+      cap:{q:'— Pornește de la PALMIER 🌴: 2 pași spre VEST, apoi 3 pași spre SUD, apoi 1 pas spre EST. Unde sapi?',
+        cols:['A','B','C','D','E'],rows:5,plecare:'D2',marci:{A1:'🌊',E5:'🐚',B4:'🪨'},ras:'C5'}},
+
+    {t:'alege',cat:'mat',cine:COCO,
+      q:'— Pe 2 palmieri sunt câte 5 nuci de cocos. O maimuță fură 3 nuci. Câte nuci au mai rămas?',
+      opt:[{x:'7 nuci',ok:true},{x:'6 nuci'},{x:'8 nuci'},{x:'12 nuci'}],
+      hint:'Întâi află câte nuci sunt în total: 5 și încă 5. Apoi scade cele 3 furate.',
+      invat:'Întâi aduni tot, apoi scazi ce se pierde. Ordinea contează.',
+      cap:{q:'— Pe 4 palmieri sunt câte 7 nuci. Maimuțele fură 9 nuci, iar alte 4 cad în apă. Câte nuci au mai rămas?',
+        opt:[{x:'15 nuci',ok:true},{x:'17 nuci'},{x:'13 nuci'},{x:'19 nuci'}],
+        hint:'4 palmieri × 7 nuci = totalul. Apoi scazi pe rând: mai întâi 9, apoi 4.'}},
+
+    {t:'memorie',cat:'mem',cine:COCO,
+      q:'— Cra! Îți strig un șir de lucruri. Ține minte ORDINEA, apoi repetă-l apăsând pe ele.',
+      pool:['🐚','⭐','🌴','🦀'],lung:3,
+      hint:'Spune-le în gând, ca pe o poezie scurtă. Așa se ține minte mai ușor.',
+      invat:'Ca să ții minte un șir, spune-l în gând ca pe un cântecel. Creierul ține minte ritmul.',
+      cap:{pool:['🐚','⭐','🌴','🦀','🐠','🪸'],lung:5}},
+
+    {t:'film',dur:12,
+      cadre:[{pana:12,scena:'plaja',par:{paleta:'zi',mers:false}}],
+      replici:[
+        {t:0,cine:VANT,x:'Te oprești la umbra unui palmier și îți numeri dublonii.'},
+        {t:4,cine:VANT,x:'O umbră trece peste nisip. Un pescăruș slăbănog aterizează chiar lângă tine.'},
+        {t:8,cine:PESCARUS,x:'— Psst! Ascultă aici! Se uită iute în stânga și în dreapta.'}],
+      actori:[{p:'pescarus',t0:4,t1:6.6,from:[1.1,.16],to:[.58,.56],s:104,arc:.1,inclina:true}]},
+
+    {t:'decizie',cat:'capcana',cine:PESCARUS,
+      q:'— Îți spun EXACT unde e comoara. Dă-mi toți dublonii tăi. ACUM! Oferta ține doar un minut!',
+      opt:[
+        {x:'Îi dau toți dublonii. Dacă e așa grăbit, sigur spune adevărul.',v:'rau',dub:-5,
+         fb:'Pescărușul înșfacă dublonii și zboară râzând: — E pe undeva! Cra-cra! Ai rămas cu 5 dubloni mai puțin și fără nicio informație.'},
+        {x:'Îl întreb: «De unde știi? Arată-mi o dovadă.»',v:'bun',dub:3,
+         fb:'Pescărușul se bâlbâie, se uită în sus, în jos... și zboară fără un cuvânt. Coco râde din palmier și îți aruncă 3 dubloni pentru istețime.'},
+        {x:'Spun politicos «Nu, mulțumesc» și îmi văd de drum.',v:'ok',dub:0,
+         fb:'Alegere sigură — nu ai pierdut nimic. Data viitoare poți chiar să ceri o dovadă: uneori afli ceva folositor.'}],
+      invat:'Cine te grăbește («doar acum!», «ultima șansă!») și îți cere tot ce ai, de obicei vrea să te păcălească. Întreabă mereu: «De unde știi? Arată-mi dovada.» Adevărul nu se grăbește niciodată.'}
+  ],
+  obiect:{ic:'🗝️',n:'Cheia de bronz'},
+  indiciu:{poz:4,cif:2,text:'Coco scapă 2 pene verzi. Pe spatele hărții scrie: «A PATRA cifră a lacătului = numărul de pene.»'},
+  final:[{t:'film',dur:12,
+    cadre:[{pana:12,scena:'plaja',par:{paleta:'apus',mers:false}}],
+    replici:[
+      {t:0,cine:COCO,x:'— Cra! Nu ești chiar așa de tont pe cât păreai.'},
+      {t:4,cine:VANT,x:'Coco îți lasă în palmă o cheie de bronz, caldă de la soare.'},
+      {t:8,cine:VANT,x:'Și o bucată ruptă de hartă: o peșteră neagră, într-o insulă de stâncă.'}],
+    actori:[{p:'papagal',t0:0,t1:.5,from:[.64,.34],to:[.64,.34],s:126},
+            {p:'cheie',t0:4,t1:5.8,from:[.38,.64],to:[.38,.5],s:96},
+            {p:'harta',t0:8,t1:9.6,from:[.62,.74],to:[.62,.58],s:104}]}]
+});
+
+/* ═══════════ INSULA 2 · PEȘTERA ECOULUI ═══════════ */
+INSULE.push({
+  nume:'Peștera Ecoului', e:'🕯️', x:28, y:32,
+  intro:[
+    {t:'film',dur:24,
+      cadre:[{pana:12,scena:'mare',par:{paleta:'furtuna',tinta:'stanca',tx:.72,crestere:true}},
+             {pana:24,scena:'pestera',par:{}}],
+      replici:[
+        {t:0,cine:VANT,x:'Noaptea vine repede pe mare. Vântul se schimbă și cerul se face vânăt.'},
+        {t:5,cine:VANT,x:'Valurile lovesc coca. Un fulger luminează stânci negre, drept în față.'},
+        {t:9.5,cine:VANT,x:'Ancorezi la adăpost. Insula asta n-are nici iarbă, nici copaci — numai piatră.'},
+        {t:13,cine:VANT,x:'În mijloc, o gură de peșteră cască întunecată. Strigi: «Heeei!»'},
+        {t:17,cine:VANT,x:'Peștera răspunde: «Heeei...». Apoi mai spune ceva. Ceva ce TU nu ai spus.'},
+        {t:21,cine:ECOU,x:'— Intră... dacă știi să citești semnele. Aici pereții vorbesc în cifre.'}]}
+  ],
+  pasi:[
+    {t:'cod',cat:'cod',cine:ECOU,mod:'litere',
+      q:'— Pe perete sunt săpate cifrele: 7 — 3 — 9 — 5. Alături e tabelul meu. Ce cuvânt scrie?',
+      cifru:[['A',3],['E',5],['M',7],['R',9]],pool:['A','E','M','R','S','T'],ras:'MARE',
+      hint:'Ia cifrele una câte una și caut-o în tabel. 7 este... care literă?',
+      invat:'Un cod se sparge răbdător, semn cu semn. Nu sări la ultimul până nu l-ai găsit pe primul.',
+      cap:{q:'— Pe perete: 1 — 2 — 6 — 2 — 4 — 8 — 4. Tabelul e mai jos. Ce cuvânt scrie?',
+        cifru:[['A',4],['C',1],['M',6],['O',2],['R',8]],pool:['A','C','E','I','M','O','R','T'],ras:'COMOARA'}},
+
+    {t:'alege',cat:'logic',cine:ECOU,
+      q:'— Pietrele luminoase de pe jos formează un șir: 2, 4, 6, 8, ... Ce număr urmează?',
+      opt:[{x:'10',ok:true},{x:'9'},{x:'11'},{x:'12'}],
+      hint:'Vezi cu cât crește de fiecare dată: de la 2 la 4, de la 4 la 6...',
+      invat:'Într-un șir, caută mai întâi regula. Regula îți spune tot ce urmează.',
+      cap:{q:'— Trei uși. Pe Ușa 1 scrie: «Comoara e aici». Pe Ușa 2: «Comoara NU e aici». Pe Ușa 3: «Comoara e la Ușa 1». Doar UN mesaj spune adevărul. Ce ușă alegi?',
+        opt:[{x:'Ușa 3',ok:true,fb:'Exact. Dacă e la Ușa 3: mesajul 1 e fals, mesajul 2 e adevărat, mesajul 3 e fals. Un singur adevăr — se potrivește.'},
+             {x:'Ușa 1',fb:'Dacă ar fi la Ușa 1, atunci și mesajul 1 și mesajul 3 ar fi adevărate. Două adevăruri — prea multe.'},
+             {x:'Ușa 2',fb:'Dacă ar fi la Ușa 2, toate trei mesajele ar fi false. Zero adevăruri — prea puține.'}],
+        hint:'Ia pe rând fiecare variantă: «Dacă ar fi la Ușa 1, câte mesaje ar fi adevărate?» Caută varianta cu exact UN adevăr.',
+        invat:'Când nu poți ghici, verifică fiecare variantă pe rând și numără. Așa gândesc detectivii.'}},
+
+    {t:'cod',cat:'cod',cine:ECOU,mod:'cifre',
+      q:'— Ușa are un lacăt cu 3 cifre. Pe perete scrie: prima cifră = 2+3. A doua = 7−4. A treia = câte degete ai la o mână.',
+      ras:'535',
+      hint:'Rezolvă rândurile pe rând, de sus în jos, și apasă cifrele în aceeași ordine.',
+      invat:'Un lacăt cu mai multe cifre nu e o problemă mare — sunt doar mai multe probleme mici, puse una după alta.',
+      cap:{q:'— Lacăt cu 3 cifre. Prima cifră = 5+3. A doua = 9−4. A treia = 8 : 4.',ras:'852'}},
+
+    {t:'decizie',cat:'capcana',cine:ECOU,
+      q:'— Vezi groapa aia întunecată? Sari în ea, e o scurtătură! TOȚI pirații adevărați sar. Ce, ți-e frică?',
+      opt:[
+        {x:'Sar. Nu vreau să creadă cineva că mi-e frică.',v:'rau',dub:-4,
+         fb:'Cazi doi metri într-o baltă rece și noroioasă. Nicio scurtătură pe nicăieri. Te ridici ud, cu 4 dubloni pierduți în mâl — și puțin mai înțelept.'},
+        {x:'Arunc mai întâi o piatră, ca să aud cât e de adânc.',v:'bun',dub:3,
+         fb:'Piatra face «plici» abia după două secunde lungi. E adânc și plin de mâl. Ocolești groapa pe margine, fluierând.'},
+        {x:'Nu sar și plec pe alt drum, fără să verific.',v:'ok',dub:0,
+         fb:'Ai evitat pericolul, foarte bine. Data viitoare poți și să testezi — informația e o armă.'}],
+      invat:'«Toți fac asta» nu e niciodată un motiv bun. Și când vrei să afli dacă ceva e periculos, testează cu un lucru mic (o piatră) — nu cu tine.'}
+  ],
+  obiect:{ic:'🏮',n:'Felinarul peșterii'},
+  indiciu:{poz:1,cif:7,text:'Pe tavanul peșterii licăresc 7 cristale albastre. Sub ele, săpat în piatră: «PRIMA cifră = câte cristale numeri.»'},
+  final:[{t:'film',dur:11,
+    cadre:[{pana:11,scena:'pestera',par:{inauntru:true}}],
+    replici:[
+      {t:0,cine:ECOU,x:'— Bine... bine... Ia felinarul. Fără el, insula următoare te înghite.'},
+      {t:4.5,cine:VANT,x:'Din perete se desprinde a doua bucată de hartă.'},
+      {t:8,cine:VANT,x:'Pe ea: o junglă deasă și un șarpe încolăcit pe o creangă.'}],
+    actori:[{p:'felinar',t0:.5,t1:2.4,from:[.36,.64],to:[.36,.5],s:110},
+            {p:'harta',t0:4.5,t1:6.2,from:[.66,.68],to:[.66,.54],s:104}]}]
+});
+
+/* ═══════════ INSULA 3 · JUNGLA ȘARPELUI ═══════════ */
+INSULE.push({
+  nume:'Jungla Șarpelui', e:'🐍', x:45, y:72,
+  intro:[
+    {t:'film',dur:22,
+      cadre:[{pana:7,scena:'mare',par:{paleta:'zi',tinta:'palmier',tx:.72,crestere:true}},
+             {pana:22,scena:'jungla',par:{}}],
+      replici:[
+        {t:0,cine:VANT,x:'Dimineața e albastră și caldă. Insula a treia e o pată de verde gros.'},
+        {t:4,cine:VANT,x:'Tragi barca pe mal și intri în junglă. Aerul e umed și miroase a flori dulci.'},
+        {t:8.5,cine:VANT,x:'Frunzele îți trec peste față. Undeva, în stânga, ceva fâșâie și tace la loc.'},
+        {t:12.5,cine:VANT,x:'Un șarpe verde te privește de pe o creangă, apoi se strecoară mai departe.'},
+        {t:16.5,cine:VANT,x:'Poteca se deschide. În mijlocul junglei: o tarabă șubredă și un om cu pălărie mare.'},
+        {t:19.5,cine:NEGUSTOR,x:'— Bun venit, căpitane! Cele mai bune prețuri din Marea Uitată, numai azi!'}],
+      actori:[{p:'sarpe',t0:12.5,t1:15,from:[1.08,.52],to:[.74,.5],s:126},
+              {p:'negustor',sol:true,t0:17,t1:18.6,from:[.52,.56],to:[.52,.44],s:168}]}
+  ],
+  pasi:[
+    {t:'decizie',cat:'capcana',cine:NEGUSTOR,
+      q:'— Uite ce am: harta mea SUPER, doar 10 dubloni. SAU harta ADEVĂRATĂ, doar 3 dubloni... dar îmi dai și cheia ta de bronz. Ce alegi?',
+      opt:[
+        {x:'Plătesc 10 dubloni pentru harta SUPER.',v:'rau',dub:-10,
+         fb:'Desfaci sulul acasă: e o foaie complet goală, cu o inimioară desenată în colț. Negustorul e deja de mult în junglă.'},
+        {x:'Dau 3 dubloni și cheia de bronz.',v:'rau',dub:-3,
+         fb:'Harta «adevărată» e o hartă a altei mări. Iar fără cheie nu mai deschizi nimic! Din fericire, Coco zboară după negustor și îți smulge cheia înapoi din buzunar.'},
+        {x:'Îi cer să-mi arate harta ÎNAINTE să plătesc.',v:'bun',dub:5,
+         fb:'Negustorul se face roșu, apoi galben, apoi fuge în junglă lăsând taraba în urmă. Sub tejghea găsești 5 dubloni uitați.'}],
+      invat:'Vezi întotdeauna ce cumperi înainte să plătești. Și nu da niciodată la schimb un lucru de care ai neapărată nevoie — oricât de bună pare oferta.'},
+
+    {t:'alege',cat:'mat',cine:VANT,
+      q:'Trei maimuțe flămânde îți blochează poteca. Ai 12 banane și le împarți în mod egal. Câte banane primește fiecare maimuță?',
+      opt:[{x:'4 banane',ok:true},{x:'3 banane'},{x:'5 banane'},{x:'9 banane'}],
+      hint:'A împărți în mod egal înseamnă că fiecare primește la fel de multe. 12 împărțit la 3.',
+      invat:'Împărțirea egală înseamnă porții la fel de mari pentru toată lumea. Fără favoriți.',
+      cap:{q:'Ai 45 de dubloni. Pui 10 deoparte pentru reparat corabia, iar restul îi împarți egal la 5 marinari. Câți dubloni primește un marinar?',
+        opt:[{x:'7 dubloni',ok:true},{x:'9 dubloni'},{x:'6 dubloni'},{x:'8 dubloni'}],
+        hint:'Întâi scade cei 10 pentru corabie. Abia apoi împarți ce a rămas la 5.'}},
+
+    {t:'alege',cat:'logic',cine:VANT,
+      q:'Poteca e făcută din pietre numerotate: 5, 10, 15, 20, ... Pe ce piatră trebuie să calci în continuare?',
+      opt:[{x:'25',ok:true},{x:'21'},{x:'30'},{x:'24'}],
+      hint:'Vezi cu cât crește de fiecare dată și adaugă la ultimul număr.',
+      invat:'Un șir are întotdeauna o regulă ascunsă. Găsește regula și ai găsit răspunsul.',
+      cap:{q:'Pietrele au numerele: 3, 6, 12, 24, ... Pe ce piatră calci?',
+        opt:[{x:'48',ok:true},{x:'36'},{x:'30'},{x:'42'}],
+        hint:'Aici nu se adaugă mereu același număr. Încearcă să înmulțești fiecare număr cu 2.'}},
+
+    {t:'alege',cat:'logic',cine:VANT,
+      q:'Trei poteci trec mlaștina cu crocodili. Pe un copac, un explorator a scris: «Poteca sigură are tot atâtea pietre câte degete are o mână.» Ce potecă alegi?',
+      opt:[{x:'Poteca B — 5 pietre 🪨🪨🪨🪨🪨',ok:true},{x:'Poteca A — 3 pietre 🪨🪨🪨'},{x:'Poteca C — 7 pietre 🪨🪨🪨🪨🪨🪨🪨'}],
+      hint:'Câte degete are o mână? Numără pietrele de pe fiecare potecă și compară.',
+      invat:'Indiciul conținea deja răspunsul. Citește-l până la capăt, apoi numără — nu ghici.',
+      cap:{q:'Trei poteci trec mlaștina. Pe copac scrie: «Poteca sigură are un număr de pietre care este PAR și mai MARE decât 4.» Ce potecă alegi?',
+        opt:[{x:'Poteca B — 6 pietre',ok:true},{x:'Poteca A — 3 pietre'},{x:'Poteca C — 9 pietre'}],
+        hint:'Un număr par se împarte exact la 2: 2, 4, 6, 8... Apoi verifică și a doua condiție: mai mare decât 4.',
+        invat:'Când un indiciu are DOUĂ condiții, răspunsul bun trebuie să le respecte pe amândouă. Verifică-le pe rând.'}}
+  ],
+  obiect:{ic:'🔪',n:'Maceta din junglă'},
+  indiciu:{poz:5,cif:5,text:'Pe trunchiul unui copac bătrân sunt tăiate 5 crestături adânci. Dedesubt: «A CINCEA cifră = câte crestături.»'},
+  final:[{t:'film',dur:11,
+    cadre:[{pana:11,scena:'jungla',par:{mers:false}}],
+    replici:[
+      {t:0,cine:VANT,x:'Negustorul nu se mai vede nicăieri. Taraba lui a rămas goală.'},
+      {t:4,cine:VANT,x:'Sub tejghea găsești a treia bucată de hartă, mototolită și pătată de suc de mango.'},
+      {t:8,cine:VANT,x:'Pe ea: recife de corali și o siluetă cu coadă de pește, stând pe o stâncă.'}],
+    actori:[{p:'harta',t0:4,t1:5.8,from:[.5,.68],to:[.5,.52],s:104}]}]
+});
+
+/* ═══════════ INSULA 4 · RECIFELE SIRENEI ═══════════ */
+INSULE.push({
+  nume:'Recifele Sirenei', e:'🧜', x:62, y:30,
+  intro:[
+    {t:'film',dur:20,
+      cadre:[{pana:7,scena:'mare',par:{paleta:'zi',cx:.5}},
+             {pana:20,scena:'recif',par:{paleta:'zi'}}],
+      replici:[
+        {t:0,cine:VANT,x:'Marea se face tot mai limpede, până vezi fundul.'},
+        {t:4,cine:VANT,x:'Corabia alunecă peste un recif de corali roz și pești care par pictați de mână.'},
+        {t:9,cine:VANT,x:'Pe o stâncă din mijlocul apei stă cineva. Are părul verde ca algele.'},
+        {t:13,cine:VANT,x:'Fredonează ceva ce îți face pleoapele grele...'},
+        {t:16,cine:SIRENA,x:'— Un pirat! Ce noroc pe mine. Am o înțelegere numai bună pentru tine. Citește cu ATENȚIE, da?'}],
+      actori:[{p:'sirena',t0:9,t1:10.8,from:[.64,.52],to:[.64,.42],s:160}]}
+  ],
+  pasi:[
+    {t:'decizie',cat:'capcana',cine:SIRENA,
+      doc:{titlu:'ÎNȚELEGEREA SIRENEI',mare:'PRIMEȘTI 100 DE DUBLONI DE AUR!',
+        mic:'Prin semnarea prezentei, semnatarul predă harta sa în întregime și se obligă să cânte pentru Sirena Maré, fără pauză, timp de 100 (una sută) de ani, pe stânca din dreptul recifului.'},
+      q:'Sirena îți întinde o hârtie și un pix de scoică. Rândul de sus e scris cu litere uriașe. Sub el e ceva mărunt, cât urma unui furnicar. Ce faci?',
+      opt:[
+        {x:'Semnez repede! 100 de dubloni, ce mai stau pe gânduri?',v:'rau',dub:-6,
+         fb:'Abia după ce semnezi citești rândul mărunt: harta ta și 100 de ani de cântat. Coco smulge hârtia din mâna sirenei în ultima clipă. Ai scăpat — dar cu 6 dubloni «taxă de rupere».'},
+        {x:'Citesc mai întâi rândul scris mărunt.',v:'bun',dub:4,
+         fb:'Rândul mărunt zice tot: harta ta plus 100 de ani de cântat pe stâncă. Refuzi politicos. Sirena râde cu poftă: — Îmi placi, piratule. Ține 4 dubloni pentru ochii tăi ageri.'},
+        {x:'Refuz din start, fără să citesc nimic.',v:'ok',dub:0,
+         fb:'Ai fost prudent și nu ai pierdut nimic. Dar dacă citeai, aflai și DE CE era o capcană — iar asta te ajută data viitoare.'}],
+      invat:'Ofertele «prea bune ca să fie adevărate» ascund aproape mereu un rând scris mărunt. Citește TOT înainte să spui da — mai ales partea pe care cineva speră că nu o citești.'},
+
+    {t:'harta',cat:'nav',cine:SIRENA,
+      q:'— Perla mea e la coordonata unde se întâlnesc coloana C și rândul 2. Apasă acolo, piratule.',
+      cols:['A','B','C','D'],rows:4,marci:{A3:'🪸',D1:'🐠'},ras:'C2',
+      hint:'Literele de sus sunt coloanele. Cifrele din stânga sunt rândurile. Pune un deget pe litera C, altul pe rândul 2 și mergi până se întâlnesc.',
+      invat:'O coordonată e o întâlnire: mai întâi litera (coloana), apoi cifra (rândul). Așa se citesc toate hărțile din lume.',
+      cap:{q:'— Trei scoici zac pe recif: A2, C4 și E1. Perla e în scoica a cărei literă e a TREIA din alfabet și al cărei număr este 2×2. Care e?',
+        cols:['A','B','C','D','E'],rows:5,marci:{A2:'🐚',C4:'🐚',E1:'🐚'},ras:'C4',
+        hint:'A treia literă din alfabet: A, B, ... care urmează? Și 2×2 face cât?'}},
+
+    {t:'alege',cat:'mat',cine:SIRENA,
+      q:'— Ai 8 perle. Le împărțim frățește, în două părți egale: una ție, una mie. Câte perle primești tu?',
+      opt:[{x:'4 perle',ok:true},{x:'2 perle'},{x:'6 perle'},{x:'8 perle'}],
+      hint:'În două părți egale înseamnă că împarți la 2. Jumătate din 8.',
+      invat:'Jumătate înseamnă două părți la fel de mari. Dacă una e mai mare, nu mai e jumătate.',
+      cap:{q:'— Ai 24 de perle. Îmi dai un SFERT din ele. Câte perle îți rămân ție?',
+        opt:[{x:'18 perle',ok:true},{x:'20 perle'},{x:'6 perle'},{x:'12 perle'}],
+        hint:'Un sfert înseamnă că împarți la 4. Află întâi cât e un sfert din 24, apoi scade-l din 24.'}},
+
+    {t:'ordine',cat:'mat',cine:SIRENA,
+      q:'— Așază scoicile în ordine, de la cea mai MICĂ la cea mai MARE. Apasă-le în ordinea corectă.',
+      items:[7,3,12,5],
+      hint:'Caută mai întâi cel mai mic număr dintre toate și apasă-l. Apoi caută cel mai mic dintre cele rămase.',
+      invat:'Ca să ordonezi ceva, alegi de fiecare dată cel mai mic dintre cele rămase. Un pas simplu, repetat, rezolvă o problemă mare.',
+      cap:{items:[21,9,30,12,3,18]}},
+
+    {t:'memorie',cat:'mem',cine:SIRENA,
+      q:'— Ascultă cântecul meu și repetă-l. Dacă greșești, îl mai cânt o dată — nu te mănâncă nimeni.',
+      pool:['🔵','🟡','🔴','🟢'],lung:4,
+      hint:'Împarte șirul în bucăți mici: primele două, apoi următoarele două. Bucățile mici se țin minte mai ușor.',
+      invat:'Un șir lung se ține minte mai ușor dacă îl rupi în bucăți de câte două-trei. Așa memorăm și numerele de telefon.',
+      cap:{pool:['🔵','🟡','🔴','🟢','🟣','🟠'],lung:5}}
+  ],
+  obiect:{ic:'🌙',n:'Perla Lunii'},
+  indiciu:{poz:2,cif:4,text:'Sirena îți lasă în palmă 4 solzi argintii: «A DOUA cifră = câți solzi ai primit.»'},
+  final:[{t:'film',dur:11,
+    cadre:[{pana:11,scena:'recif',par:{paleta:'apus'}}],
+    replici:[
+      {t:0,cine:SIRENA,x:'— Ia perla asta. Luminează sub apă și nu se stinge niciodată.'},
+      {t:4,cine:SIRENA,x:'— Ca oamenii care întreabă «de ce». Apoi se scufundă fără un strop de zgomot.'},
+      {t:8,cine:VANT,x:'Sub perlă găsești a patra bucată de hartă: un munte negru din care iese fum.'}],
+    actori:[{p:'sirena',t0:0,t1:.5,from:[.64,.42],to:[.64,.42],s:160,pana:5.6},
+            {p:'perla',t0:5.6,t1:7.2,from:[.44,.62],to:[.44,.5],s:92}]}]
+});
+
+/* ═══════════ INSULA 5 · VULCANUL ADORMIT ═══════════ */
+INSULE.push({
+  nume:'Vulcanul Adormit', e:'🌋', x:78, y:66,
+  intro:[
+    {t:'film',dur:20,
+      cadre:[{pana:6,scena:'mare',par:{paleta:'zori',tinta:'vulcan',tx:.7,crestere:true}},
+             {pana:20,scena:'vulcan',par:{}}],
+      replici:[
+        {t:0,cine:VANT,x:'La orizont, o insulă fumegă. Un munte negru sforăie ca un uriaș adormit.'},
+        {t:4,cine:VANT,x:'Cenușa cade încet, ca o zăpadă caldă. Pământul e fierbinte sub tălpi.'},
+        {t:8.5,cine:VANT,x:'Din fum iese un bătrân cu barbă albă, sprijinit într-un toiag.'},
+        {t:12,cine:PUSTNIC,x:'— Vulcanul se trezește curând. Ai puțin timp, piratule.'},
+        {t:16,cine:PUSTNIC,x:'— Dar ține minte: cine se grăbește greșește de două ori.'}],
+      actori:[{p:'pustnic',sol:true,t0:8.5,t1:11,from:[1.1,.6],to:[.62,.56],s:168}]}
+  ],
+  pasi:[
+    {t:'alege',cat:'mat',cine:PUSTNIC,ceas:{h:3,m:0},
+      q:'— Vulcanul erupe la ora 5. Ceasul meu de buzunar arată acum ora 3. Peste câte ore erupe?',
+      opt:[{x:'2 ore',ok:true},{x:'1 oră'},{x:'3 ore'},{x:'8 ore'}],
+      hint:'Numără pe ceas de la 3 până la 5: 3... 4... 5. Câți pași ai făcut?',
+      invat:'Ca să afli cât timp a trecut, scazi ora mică din ora mare. Sau numeri pe cadran, din oră în oră.',
+      cap:{ceas:{h:2,m:20},
+        q:'— Acum e ora 14:20. Vulcanul erupe la 15:05. Câte minute mai ai la dispoziție?',
+        opt:[{x:'45 de minute',ok:true},{x:'55 de minute'},{x:'35 de minute'},{x:'85 de minute'}],
+        hint:'De la 14:20 până la 15:00 sunt 40 de minute. Apoi mai adaugi minutele până la 15:05.'}},
+
+    {t:'alege',cat:'logic',cine:PUSTNIC,
+      q:'— Pe balanța mea: 1 piatră MARE cântărește exact cât 2 pietre mici. Câte pietre mici cântăresc cât 3 pietre mari?',
+      opt:[{x:'6 pietre mici',ok:true},{x:'5 pietre mici'},{x:'8 pietre mici'},{x:'3 pietre mici'}],
+      hint:'Fiecare piatră mare valorează 2 mici. Ai 3 pietre mari. Adună: 2 și 2 și 2.',
+      invat:'Când știi cât valorează UNUL, afli imediat cât valorează oricâți. Asta e cheia oricărei schimbări corecte.',
+      cap:{q:'— Pe balanță: 2 pietre mari cântăresc exact cât 6 pietre mici. Câte pietre mici cântăresc cât 5 pietre mari?',
+        opt:[{x:'15 pietre mici',ok:true},{x:'12 pietre mici'},{x:'10 pietre mici'},{x:'18 pietre mici'}],
+        hint:'Află întâi cât cântărește O SINGURĂ piatră mare: 6 mici împărțite la 2 mari. Abia apoi înmulțește cu 5.'}},
+
+    {t:'decizie',cat:'capcana',cine:PUSTNIC,
+      q:'Ajungi la o bifurcație. Pe o piatră e scrijelit cu litere uriașe: «REPEDE! POTECA DIN STÂNGA! NU PIERDE TIMPUL CITIND!» Ce faci?',
+      opt:[
+        {x:'Fug pe poteca din stânga. Nu e timp de citit!',v:'rau',dub:-5,
+         fb:'Poteca din stânga se termină brusc deasupra unui râu de lavă răcită. Te întorci din drum obosit și cu 5 dubloni scăpați pe jos, prin pietre.'},
+        {x:'Mă opresc și citesc și restul mesajului, mai jos pe piatră.',v:'bun',dub:4,
+         fb:'Mai jos, cu litere mici: «...așa scrie oricine vrea să te păcălească. Poteca sigură e cea cu urme de pași.» Alegi poteca din dreapta, plină de urme, și ajungi teafăr.'},
+        {x:'Dau cu banul și aleg la întâmplare.',v:'ok',dub:0,
+         fb:'Nimerești bine — dar din noroc curat. Norocul e plăcut, însă nu e un plan pe care să te bazezi.'}],
+      invat:'Când un mesaj țipă «REPEDE!» și îți spune să NU citești, exact atunci trebuie să citești mai atent. Graba e unealta preferată a celor care mint.'},
+
+    {t:'cod',cat:'cod',cine:PUSTNIC,mod:'cifre',
+      q:'— Ușa de piatră are un lacăt cu 3 cifre. Prima cifră: câte picioare are o pisică. A doua: 3+3. A treia: numărul dinaintea lui 3.',
+      ras:'462',
+      hint:'Rezolvă rândurile în ordine, de sus în jos, și apasă cifrele în aceeași ordine.',
+      invat:'Instrucțiunile se citesc în ordine, de sus în jos. Dacă sari un rând, lacătul rămâne închis.',
+      cap:{q:'— Lacăt cu 3 cifre. Prima: câte laturi are un triunghi. A doua: 10−4. A treia: dublul lui 4.',ras:'368'}}
+  ],
+  obiect:{ic:'🔥',n:'Cristalul de foc'},
+  indiciu:{poz:3,cif:9,text:'Din gura vulcanului zboară 9 scântei roșii. Pustnicul spune: «A TREIA cifră = câte scântei ai numărat.»'},
+  final:[{t:'film',dur:11,
+    cadre:[{pana:11,scena:'vulcan',par:{}}],
+    replici:[
+      {t:0,cine:PUSTNIC,x:'— Ia cristalul. E cald și iarna, și noaptea.'},
+      {t:4,cine:VANT,x:'Îți pune în palmă ultima bucată de hartă și dispare în fum.'},
+      {t:8,cine:VANT,x:'Cele cinci bucăți se apropie singure în mâinile tale, ca și cum s-ar recunoaște.'}],
+    actori:[{p:'pustnic',sol:true,t0:0,t1:.5,from:[.64,.56],to:[.64,.56],s:168,pana:6},
+            {p:'cristal',t0:1,t1:2.8,from:[.34,.64],to:[.34,.5],s:100}]}]
+});
+
+/* ═══════════ INSULA 6 · INSULA COMORII ═══════════ */
+INSULE.push({
+  nume:'Insula Comorii', e:'💎', x:91, y:24,
+  intro:[
+    {t:'film',dur:18,
+      cadre:[{pana:9,scena:'harta',par:{}},
+             {pana:18,scena:'craniu',par:{paleta:'apus'}}],
+      replici:[
+        {t:0,cine:VANT,x:'Cele cinci bucăți se lipesc una de alta, cu un foșnet uscat.'},
+        {t:4,cine:VANT,x:'Harta întreagă arată o insulă mică, în formă de craniu — acolo unde pe toate celelalte hărți e doar apă goală.'},
+        {t:9.5,cine:VANT,x:'Ceața se dă la o parte. Insula e chiar acolo, unde nu era nimic.'},
+        {t:13.5,cine:VANT,x:'Cobori pe plajă. În nisip, pe jumătate îngropat: un lacăt uriaș de fier cu cinci cifre.'}]}
+  ],
+  pasi:[
+    {t:'cod',cat:'cod',cine:VANT,mod:'cifre',jurnal:true,
+      q:'Lacătul cere un cod din 5 cifre. Tot ce ai nevoie e deja în jurnalul tău de bord — fiecare insulă ți-a dat o cifră și poziția ei.',
+      ras:'74925',
+      hint:'Deschide jurnalul. Un indiciu spune «PRIMA cifră», altul «A DOUA cifră»... Pune-le în ordine, de la poziția 1 la poziția 5.',
+      invat:'Ai adunat cinci informații de pe cinci insule diferite și le-ai pus cap la cap. Așa se rezolvă problemele mari: din bucăți mici, strânse cu răbdare.'},
+
+    {t:'film',dur:12,
+      cadre:[{pana:12,scena:'craniu',par:{paleta:'apus',cufar:true}}],
+      replici:[
+        {t:0,cine:VANT,x:'Lacătul cade în nisip cu un pocnet sec. Ridici capacul greu...'},
+        {t:5,cine:VANT,x:'Cufărul e GOL.'},
+        {t:8,cine:VANT,x:'Pe fundul lui, un bilet mototolit: «Am ajuns primul. — Piratul Șiret»'}],
+      actori:[{p:'bilet',t0:8,t1:9.6,from:[.5,.92],to:[.5,.74],s:96}]},
+
+    {t:'decizie',cat:'capcana',cine:VANT,
+      q:'Lângă cufăr, în nisipul umed, sunt urme proaspete de pași. Duc spre stânca din spatele plajei. Ce faci?',
+      opt:[
+        {x:'Mă întorc trist la corabie. S-a terminat, altcineva a luat totul.',v:'rau',dub:0,
+         fb:'Coco te ciupește tare de ureche: — Cra! Un pirat adevărat nu se oprește la primul cufăr gol! Te întorci și te uiți mai bine în jur.'},
+        {x:'Urmăresc urmele de pași.',v:'bun',dub:10,
+         fb:'Urmele duc după stâncă. Acolo: un al doilea cufăr, mult mai vechi — și un pirat care doarme dus, cu gura deschisă, chiar pe capacul lui. Îl împingi ușor la umbră și deschizi cufărul.'},
+        {x:'Sap mai adânc în același loc, poate mai e ceva dedesubt.',v:'ok',dub:0,
+         fb:'Găsești nisip, nisip și un crab foarte supărat. Apoi, ridicând capul, observi urmele de pași.'}],
+      invat:'Când ceva pare pierdut, nu pleca imediat: uită-te la ce a rămas în jur. Urmele, un obiect uitat, un detaliu mic — povestea continuă aproape întotdeauna undeva.'},
+
+    {t:'film',dur:12,
+      cadre:[{pana:12,scena:'craniu',par:{paleta:'apus',cufar:true}}],
+      replici:[
+        {t:0,cine:VANT,x:'În cufărul adevărat nu e aur până sus.'},
+        {t:4,cine:VANT,x:'E o cutie de lemn, o oglindă mică și un pumn de monede vechi.'},
+        {t:8,cine:VANT,x:'Sub ele, o scrisoare scrisă cu cerneală maro, cu un scris pe care îl recunoști din prima.'}],
+      actori:[{p:'oglinda',t0:4,t1:5.8,from:[.4,.9],to:[.4,.72],s:96},
+              {p:'scrisoare',t0:8,t1:9.6,from:[.6,.92],to:[.6,.74],s:96}]},
+
+    {t:'film',dur:26,
+      cadre:[{pana:26,scena:'apus',par:{}}],
+      replici:[
+        {t:0,cine:BUNIC,x:'— Dacă citești asta, ai trecut prin cinci insule.'},
+        {t:5,cine:BUNIC,x:'— Ai citit hărți. Ai socotit. Ai ținut minte. Ai gândit.'},
+        {t:10,cine:BUNIC,x:'— Și, mai ales, nu te-ai lăsat păcălit: nici de cine te grăbea, nici de cine îți promitea prea mult, nici de cine îți spunea să nu citești.'},
+        {t:17,cine:BUNIC,x:'— Uită-te acum în oglinda din cutie. Aia e comoara mea.'},
+        {t:21.5,cine:BUNIC,x:'— Aurul se cheltuie într-o vară. Mintea, nu.'}]}
+  ],
+  obiect:{ic:'💎',n:'Comoara Căpitanului'},
+  indiciu:null,
+  final:[]
+});
+
+/* ═══════════ STARE ═══════════ */
+var CHEIE='comoara-piratului-v2';
+var S,A={},GEN=0;
+
+function stareNoua(){
+  return {nume:'',av:'🏴‍☠️',niv:'mus',ins:0,p:0,dub:10,
+    obiecte:[],indicii:[],gata:[],ecran:'intro',sunet:true,voce:true,vociNume:'',
+    start:Date.now(),
+    st:{nav:{t:0,ok:0},mat:{t:0,ok:0},cod:{t:0,ok:0},mem:{t:0,ok:0},logic:{t:0,ok:0},capcana:{t:0,ok:0}}};
+}
+function salveaza(){ try{ localStorage.setItem(CHEIE,JSON.stringify(S)); }catch(e){} }
+function incarca(){ try{ var b=localStorage.getItem(CHEIE); return b?JSON.parse(b):null; }catch(e){ return null; } }
+function stergeSalvare(){ try{ localStorage.removeItem(CHEIE); }catch(e){} }
+
+/* ═══════════ SUNET ═══════════ */
+var AC=null;
+function ton(f,d,tip,vol){
+  if(!S||!S.sunet) return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    var o=AC.createOscillator(),g=AC.createGain();
+    o.type=tip||'sine'; o.frequency.value=f; g.gain.value=vol||0.06;
+    o.connect(g); g.connect(AC.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+d); o.stop(AC.currentTime+d);
+  }catch(e){}
+}
+function sOk(){ ton(659,.12); setTimeout(function(){ton(988,.2);},110); }
+function sNu(){ ton(180,.25,'square',.05); }
+function sClic(){ ton(540,.05,'triangle',.035); }
+function sPremiu(){ [523,659,784,1047].forEach(function(f,i){ setTimeout(function(){ton(f,.28);},i*130); }); }
+
+/* ═══════════ NARATOAREA ═══════════ */
+var VOCI=[],VOCE=null;
+var FEM=/alina|ioana|andreea|elena|maria|carmen|ana|daniela|female|femin|zira|natural.*femal/i;
+function incarcaVoci(){
+  try{
+    VOCI=(window.speechSynthesis&&speechSynthesis.getVoices())||[];
+  }catch(e){ VOCI=[]; }
+  if(!VOCI.length) return;
+  if(S&&S.vociNume){
+    for(var i=0;i<VOCI.length;i++) if(VOCI[i].name===S.vociNume){ VOCE=VOCI[i]; return; }
+  }
+  var ro=VOCI.filter(function(v){ return /^ro/i.test(v.lang); });
+  var fem=ro.filter(function(v){ return FEM.test(v.name); });
+  VOCE=fem[0]||ro[0]||null;
+}
+function vociRo(){ return VOCI.filter(function(v){ return /^ro/i.test(v.lang); }); }
+function curataText(t){
+  return String(t).replace(/[«»]/g,'').replace(/^—\s*/,'').replace(/\s—\s/g,', ').replace(/\.\.\./g,'.');
+}
+function spune(text,dupa){
+  taci();
+  if(!S||!S.voce||!text) return;
+  try{
+    if(!window.speechSynthesis) return;
+    var u=new SpeechSynthesisUtterance(curataText(text));
+    if(VOCE){ u.voice=VOCE; u.lang=VOCE.lang; } else { u.lang='ro-RO'; }
+    u.rate=.94; u.pitch=VOCE&&FEM.test(VOCE.name)?1.02:1.22; u.volume=1;
+    if(dupa) u.onend=dupa;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function taci(){ try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){} }
+function comutaVoce(){ S.voce=!S.voce; if(!S.voce) taci(); sClic(); salveaza(); render(); }
+
+/* ═══════════ FUNDAL: HARTĂ MARINĂ ═══════════ */
+function deseneazaMarea(){
+  var c=document.getElementById('mare'); if(!c) return;
+  var w=c.width=innerWidth, h=c.height=innerHeight, x=c.getContext('2d');
+  var g=x.createRadialGradient(w*.3,-h*.15,40,w*.3,h*.2,Math.max(w,h)*1.1);
+  g.addColorStop(0,'#1a5a76'); g.addColorStop(.55,'#0d3348'); g.addColorStop(1,'#061a27');
+  x.fillStyle=g; x.fillRect(0,0,w,h);
+  x.strokeStyle='rgba(223,162,53,.07)'; x.lineWidth=1;
+  for(var i=0;i<w;i+=68){ x.beginPath(); x.moveTo(i,0); x.lineTo(i,h); x.stroke(); }
+  for(var j=0;j<h;j+=68){ x.beginPath(); x.moveTo(0,j); x.lineTo(w,j); x.stroke(); }
+  [[w*.18,h*.28,Math.min(w,h)*.9],[w*.86,h*.74,Math.min(w,h)*.8]].forEach(function(r){
+    x.strokeStyle='rgba(223,162,53,.09)';
+    for(var k=0;k<16;k++){
+      var a=k*Math.PI/8;
+      x.beginPath(); x.moveTo(r[0],r[1]);
+      x.lineTo(r[0]+Math.cos(a)*r[2],r[1]+Math.sin(a)*r[2]); x.stroke();
+    }
+    x.beginPath(); x.arc(r[0],r[1],26,0,7); x.stroke();
+    x.beginPath(); x.arc(r[0],r[1],52,0,7); x.stroke();
+  });
+  var v=x.createRadialGradient(w/2,h/2,Math.min(w,h)*.3,w/2,h/2,Math.max(w,h)*.75);
+  v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(2,12,20,.75)');
+  x.fillStyle=v; x.fillRect(0,0,w,h);
+}
+
+/* ═══════════ UNELTE ═══════════ */
+function E(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function app(){ return document.getElementById('app'); }
+function amestecat(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)),t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function R(pas){
+  var o={},k; for(k in pas) if(k!=='mus'&&k!=='cap') o[k]=pas[k];
+  var v=pas[S.niv]; if(v) for(k in v) o[k]=v[k];
+  return o;
+}
+function coada(k){ var I=INSULE[k]; return I.intro.concat(I.pasi,[{t:'premiu'}],I.final); }
+function pasCurent(){ return coada(S.ins)[S.p]; }
+function deblocata(k){ return k===0 || S.gata.indexOf(k-1)>=0; }
+
+/* ═══════════ COMPONENTE ═══════════ */
+function foaie(cap,corp,pod,clsCorp){
+  return '<div class="foaie">'+
+    (cap?'<div class="cap">'+cap+'</div>':'')+
+    '<div class="corp '+(clsCorp||'')+'">'+corp+'</div>'+
+    (pod?'<div class="pod">'+pod+'</div>':'')+
+  '</div>';
+}
+function vorbitor(c,corp){
+  if(!c) return corp;
+  return '<div class="vorbitor"><div class="chip">'+c.e+'</div><div class="bula">'+
+    '<div class="cine">'+E(c.n)+'</div>'+corp+'</div></div>';
+}
+function bara(){
+  if(S.ecran==='intro') return '';
+  return '<div class="rail">'+
+    '<div class="medalion">'+S.av+'</div><div class="nume">'+E(S.nume||'Matelot')+'</div>'+
+    '<div class="spatiu"></div>'+
+    '<div class="contor">🪙 '+S.dub+'</div>'+
+    '<button class="mic-btn" onclick="jurnal()" title="Jurnalul de bord">📖<span class="cuv"> Jurnal</span></button>'+
+    '<button class="mic-btn'+(S.voce?' pornit':'')+'" onclick="fereastraVoce()" title="Naratoarea">🎙️<span class="cuv"> Voce</span></button>'+
+    '<button class="mic-btn" onclick="comutaSunet()" title="Sunetul jocului" aria-label="Sunet">'+(S.sunet?'🔊':'🔇')+'</button>'+
+  '</div>';
+}
+function comutaSunet(){ S.sunet=!S.sunet; if(!S.sunet&&typeof opresteAmb==='function') opresteAmb(); salveaza(); render(); }
+
+function rozaVant(){
+  return '<div class="roza" aria-hidden="true"><svg viewBox="0 0 100 100">'+
+    '<circle cx="50" cy="50" r="46" fill="#f7edd6" stroke="#b79a6c"/>'+
+    '<circle cx="50" cy="50" r="34" fill="none" stroke="#d3bd92"/>'+
+    '<polygon points="50,8 57,50 50,44 43,50" fill="#b53f2c"/>'+
+    '<polygon points="50,92 43,50 50,56 57,50" fill="#33200f"/>'+
+    '<polygon points="92,50 50,57 56,50 50,43" fill="#8a6b3f"/>'+
+    '<polygon points="8,50 50,43 44,50 50,57" fill="#8a6b3f"/>'+
+    '<text x="50" y="22" font-size="14" text-anchor="middle" fill="#33200f" font-family="monospace">N</text>'+
+    '<text x="50" y="89" font-size="14" text-anchor="middle" fill="#33200f" font-family="monospace">S</text>'+
+    '<text x="82" y="56" font-size="14" text-anchor="middle" fill="#33200f" font-family="monospace">E</text>'+
+    '<text x="18" y="56" font-size="14" text-anchor="middle" fill="#33200f" font-family="monospace">V</text>'+
+    '</svg>N sus · S jos · E dreapta · V stânga</div>';
+}
+function ceasSVG(h,m){
+  var rad=Math.PI/180, ah=((h%12)+m/60)*30-90, am=m*6-90, ticks='', i, a;
+  for(i=0;i<12;i++){
+    a=(i*30-90)*rad;
+    ticks+='<line x1="'+(50+Math.cos(a)*37).toFixed(2)+'" y1="'+(50+Math.sin(a)*37).toFixed(2)+
+      '" x2="'+(50+Math.cos(a)*43).toFixed(2)+'" y2="'+(50+Math.sin(a)*43).toFixed(2)+
+      '" stroke="#8a6b3f" stroke-width="'+(i%3===0?3:1.5)+'"/>';
+  }
+  return '<svg viewBox="0 0 100 100" width="112" height="112" aria-hidden="true">'+
+    '<circle cx="50" cy="50" r="45" fill="#f7edd6" stroke="#8a6b3f" stroke-width="3"/>'+ticks+
+    '<line x1="50" y1="50" x2="'+(50+Math.cos(ah*rad)*24).toFixed(2)+'" y2="'+(50+Math.sin(ah*rad)*24).toFixed(2)+'" stroke="#33200f" stroke-width="5" stroke-linecap="round"/>'+
+    '<line x1="50" y1="50" x2="'+(50+Math.cos(am*rad)*34).toFixed(2)+'" y2="'+(50+Math.sin(am*rad)*34).toFixed(2)+'" stroke="#b53f2c" stroke-width="3" stroke-linecap="round"/>'+
+    '<circle cx="50" cy="50" r="4" fill="#33200f"/></svg>';
+}
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var cul=['#dfa235','#b53f2c','#2f7f5f','#f0e2c0','#1b5570'];
+  for(var i=0;i<40;i++){
+    var d=document.createElement('i');
+    d.className='conf'; d.style.left=Math.random()*100+'vw'; d.style.background=cul[i%cul.length];
+    d.style.animation='cade '+(1.9+Math.random()*1.4)+'s linear '+(Math.random()*.5)+'s forwards';
+    document.body.appendChild(d);
+    setTimeout(function(n){ return function(){ n.remove(); }; }(d),4200);
+  }
+}
+
+/* ═══════════ PROLOG ═══════════ */
+var TEXT_PROLOG='Dacă citești asta, înseamnă că ești destul de curajos. Comoara mea nu e făcută din aur — e ceva mult mai valoros. Ca s-o găsești, treci prin cinci insule. Fiecare îți va da o cifră. Și fii atent, matelotule: pe mare, nu toți cei care zâmbesc spun adevărul.';
+function ecranIntro(){
+  var salv=incarca(), reia='';
+  if(salv&&salv.nume&&(salv.gata.length||salv.ins>0||salv.p>0))
+    reia='<button class="buton linistit" onclick="reia()">⚓ Continuă cu '+E(salv.nume)+'</button>';
+  var corp=
+    '<div><div class="eticheta">Jurnal de bord · 1723</div>'+
+    '<h1 class="titlu">Comoara Piratului</h1>'+
+    '<p class="subtitlu">Cinci insule. Cinci cifre. Un lacăt. Și o mulțime de oameni care vor să te păcălească pe drum.</p></div>'+
+    '<p>Bunicul tău, bătrânul căpitan <b>Barbă-Sură</b>, a plecat pe mare acum mulți ani și nu s-a mai întors niciodată.</p>'+
+    '<p>Ieri, în podul casei, ai găsit un cufăr prăfuit. Înăuntru: o hartă ruptă în cinci bucăți, un compas ruginit și un bilet îngălbenit.</p>'+
+    '<div class="verdict info"><span class="sm">🧔</span><div><b>Biletul căpitanului</b>'+TEXT_PROLOG+'</div></div>'+
+    '<p class="mica">Joc pentru clasele 1–4 · orientare, matematică, citire, logică, memorie și gândire critică. Poveștile sunt secvențe animate, cu naratoare.</p>';
+  var pod='<button class="buton" onclick="mergiLa(\'setup\')">🏴‍☠️ Pornesc în larg</button>'+reia+
+    '<button class="buton linistit" onclick="spune(TEXT_PROLOG)" title="Citește biletul cu voce tare">🔊 Citește-mi</button>';
+  return foaie('',corp,pod);
+}
+function reia(){ var s=incarca(); if(s){ S=s; if(S.ecran==='joc') intraPas(); else if(S.ecran==='intro') S.ecran='chart'; incarcaVoci(); render(); } }
+
+/* ═══════════ ECHIPAJ ═══════════ */
+var AVATARE=['🏴‍☠️','🦜','🐙','🦈','🧭','⚓','🐢','🦀'];
+function ecranSetup(){
+  var corp=
+    '<div><label class="eticheta" for="nm">Numele tău de pirat</label>'+
+      '<input class="text" id="nm" maxlength="16" placeholder="Ex: Ana Ochi-de-Șoim" value="'+E(S.nume)+'" oninput="S.nume=this.value"></div>'+
+    '<div><div class="eticheta">Semnul tău</div><div class="avatare" style="margin-top:5px">'+
+      AVATARE.map(function(a){ return '<button class="av'+(S.av===a?' ales':'')+'" onclick="alegeAv(\''+a+'\')" aria-label="Semn '+a+'">'+a+'</button>'; }).join('')+
+    '</div></div>'+
+    '<div><div class="eticheta">Cât de greu vrei să fie?</div><div class="nivele" style="margin-top:5px">'+
+      '<button class="nivel'+(S.niv==='mus'?' ales':'')+'" onclick="alegeNiv(\'mus\')"><span class="ic">⛵</span><span><b>Mus de punte</b><span class="mica">Clasele 1–2 · adunări și scăderi mici, hărți simple, șiruri scurte</span></span></button>'+
+      '<button class="nivel'+(S.niv==='cap'?' ales':'')+'" onclick="alegeNiv(\'cap\')"><span class="ic">🧭</span><span><b>Căpitan</b><span class="mica">Clasele 3–4 · înmulțiri, împărțiri, ore, ghicitori cu logică</span></span></button>'+
+    '</div></div>';
+  var cap='<div class="eticheta">Înainte de plecare</div><h2 class="titlu" style="font-size:clamp(1.1rem,2.8vh,1.6rem)">Cine ești tu, matelotule?</h2><hr class="val">';
+  var pod='<button class="buton" onclick="incepe()">🗺️ Ridicați ancora!</button>'+
+    '<button class="buton linistit" onclick="mergiLa(\'intro\')">Înapoi</button>';
+  return foaie(cap,corp,pod);
+}
+function alegeAv(a){ S.av=a; sClic(); render(); }
+function alegeNiv(n){ S.niv=n; sClic(); render(); }
+function incepe(){
+  var i=document.getElementById('nm');
+  if(i&&i.value.trim()) S.nume=i.value.trim();
+  if(!S.nume) S.nume='Matelot';
+  S.start=Date.now(); S.ecran='chart'; sPremiu(); salveaza(); render();
+}
+
+/* ═══════════ HARTA MĂRILOR ═══════════ */
+function ecranHarta(){
+  var urm=0; while(urm<INSULE.length&&S.gata.indexOf(urm)>=0) urm++;
+  if(urm>=INSULE.length) urm=INSULE.length-1;
+  var pts=INSULE.map(function(I){ return I.x+','+I.y; }).join(' ');
+  var pini=INSULE.map(function(I,k){
+    var st=S.gata.indexOf(k)>=0?'gata':(deblocata(k)?(k===urm?'acum':''):'blocata');
+    var poate=deblocata(k)&&S.gata.indexOf(k)<0;
+    return '<'+(poate?'button':'div')+' class="insula '+st+'" style="left:'+I.x+'%;top:'+I.y+'%"'+
+      (poate?' onclick="intraInsula('+k+')"':'')+' aria-label="'+E(I.nume)+'">'+
+      '<div class="pin">'+(st==='blocata'?'🔒':I.e)+(st==='gata'?'<span class="bifa">✅</span>':'')+'</div>'+
+      '<div class="et">'+(k+1)+'. '+E(I.nume)+'</div></'+(poate?'button':'div')+'>';
+  }).join('');
+  var pozC=INSULE[urm];
+  var cap='<div class="sus"><div>'+
+      '<div class="eticheta">Harta Mărilor Uitate</div>'+
+      '<h2 class="titlu" style="font-size:clamp(1rem,2.6vh,1.45rem)">'+(S.gata.length>=INSULE.length?'Toate insulele explorate':'Escala următoare: '+E(INSULE[urm].nume))+'</h2>'+
+    '</div><div class="tag">'+S.gata.length+' / '+INSULE.length+' insule</div></div>'+
+    '<div class="bara" style="margin-top:7px"><i style="width:'+Math.round(S.gata.length/INSULE.length*100)+'%"></i></div>';
+  var corp='<div class="chart">'+
+      '<svg class="ruta" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'+
+        '<polyline points="'+pts+'" fill="none" stroke="#dfa23577" stroke-width="0.6" stroke-dasharray="2 2"/>'+
+      '</svg>'+pini+
+      '<div class="corabie" style="left:'+pozC.x+'%;top:'+(pozC.y-13)+'%">⛵</div>'+
+    '</div>';
+  var pod=(S.gata.indexOf(INSULE.length-1)<0
+      ?'<button class="buton" onclick="intraInsula('+urm+')">'+INSULE[urm].e+' Debarcă pe '+E(INSULE[urm].nume)+'</button>'
+      :'<button class="buton" onclick="mergiLa(\'final\')">💎 Vezi diploma</button>')+
+    '<button class="buton linistit" onclick="jurnal()">📖 Jurnalul</button>';
+  return foaie(cap,corp,pod,'plin');
+}
+
+/* ═══════════ MOTORUL ═══════════ */
+function mergiLa(e){ taci(); S.ecran=e; salveaza(); render(); }
+function intraInsula(k){
+  if(!deblocata(k)) return;
+  S.ins=k; S.p=0; S.ecran='joc'; sClic(); intraPas(); salveaza(); render();
+}
+function intraPas(){
+  GEN++; taci(); if(typeof opresteAmb==='function') opresteAmb();
+  var p=R(pasCurent()||{t:'story',text:['']});
+  if(p.t==='film'&&typeof paceazaFilm==='function') p=paceazaFilm(p);
+  A={pas:p,gres:0,rezolvat:false,buf:[],faza:'',gen:GEN,fb:'',fbTip:'',aratHint:false,ales:-1};
+  if(p.t==='alege') A.opt=amestecat(p.opt);
+  if(p.t==='memorie'){ A.seq=[]; for(var i=0;i<p.lung;i++) A.seq.push(Math.floor(Math.random()*p.pool.length)); A.faza='arata'; aratSir(); }
+  if(p.t==='ordine') A.ramase=p.items.slice();
+  if(p.t!=='film'&&p.q&&S.voce) setTimeout(function(){ if(A.pas===p) spune(p.q); },260);
+}
+function inainte(){
+  S.p++;
+  var c=coada(S.ins);
+  if(S.p>=c.length){ terminaInsula(); return; }
+  intraPas(); salveaza(); render();
+}
+function terminaInsula(){
+  taci(); if(typeof opresteAmb==='function') opresteAmb();
+  if(S.gata.indexOf(S.ins)<0) S.gata.push(S.ins);
+  if(S.ins>=INSULE.length-1){ S.ecran='final'; sPremiu(); confetti(); }
+  else S.ecran='chart';
+  salveaza(); render();
+}
+function scor(cat,bun){ if(!cat||!S.st[cat]) return; S.st[cat].t++; if(bun) S.st[cat].ok++; }
+function succes(mesaj){
+  A.rezolvat=true; A.fbTip='da';
+  A.fb=mesaj||'Corect! Bravo, matelotule.';
+  scor(A.pas.cat,A.gres===0);
+  if(A.gres===0) S.dub+=2;
+  sOk(); spune(A.fb); salveaza(); render();
+}
+function esec(mesaj){
+  A.gres++; A.fbTip='nu';
+  A.fb=mesaj||'Nu e bine. Mai încearcă o dată.';
+  if(S.dub>0) S.dub--;
+  if(A.gres>=2){ A.rezolvat=true; A.fbTip='info'; A.fb=(mesaj||'')+' Uite răspunsul corect, ca să vezi cum se face.'; scor(A.pas.cat,false); }
+  else A.aratHint=true;
+  sNu(); spune(A.fb+(A.aratHint&&A.pas.hint?' '+A.pas.hint:'')); salveaza(); render();
+  var f=document.querySelector('.foaie'); if(f){ f.classList.add('scut'); setTimeout(function(){f.classList.remove('scut');},340); }
+}
+function cereIndiciu(){ A.aratHint=true; if(S.dub>0) S.dub--; sClic(); salveaza(); render(); spune(A.pas.hint); }
+function citesteAcum(){
+  var p=A.pas, t=p.q||'';
+  if(A.fb) t+='. '+A.fb;
+  if(A.aratHint&&p.hint&&!A.rezolvat) t+='. Indiciu: '+p.hint;
+  spune(t);
+}
+
+/* ═══════════ BLOCURI ═══════════ */
+function blocFeedback(){
+  var p=A.pas,h='';
+  if(A.fb) h+='<div class="verdict '+A.fbTip+'"><span class="sm">'+(A.fbTip==='da'?'🎉':(A.fbTip==='nu'?'🤔':'💡'))+'</span><div>'+
+    '<b>'+(A.fbTip==='da'?'Corect!':(A.fbTip==='nu'?'Încă nu':'Hai să vedem'))+'</b>'+E(A.fb)+'</div></div>';
+  if(A.aratHint&&!A.rezolvat&&p.hint) h+='<div class="verdict info"><span class="sm">🧭</span><div><b>Indiciu</b>'+E(p.hint)+'</div></div>';
+  if(A.rezolvat&&p.invat) h+='<div class="verdict info"><span class="sm">🎓</span><div><b>Ce ai învățat</b>'+E(p.invat)+'</div></div>';
+  return h;
+}
+function blocActiuni(extra){
+  var p=A.pas,h=extra||'';
+  if(A.rezolvat) h+='<button class="buton" onclick="inainte()">Mai departe ⚓</button>';
+  else if(p.hint&&!A.aratHint) h+='<button class="buton linistit" onclick="cereIndiciu()">💡 Indiciu (−1 🪙)</button>';
+  h+='<button class="buton linistit" onclick="citesteAcum()" title="Citește textul cu voce tare">🔊</button>';
+  return h;
+}
+function ecranJoc(){
+  var p=A.pas;
+  if(!p) return foaie('','<p>...</p>','');
+  var I=INSULE[S.ins];
+  var cap='<div class="sus"><div class="eticheta">Insula '+(S.ins+1)+'/'+INSULE.length+' · '+E(I.nume)+'</div>'+
+    '<div class="tag">'+I.e+' '+(S.niv==='mus'?'Mus':'Căpitan')+'</div></div>';
+  if(p.t==='film') return ecranFilm(p,cap);
+  var z;
+  if(p.t==='alege') z=partAlege(p);
+  else if(p.t==='decizie') z=partDecizie(p);
+  else if(p.t==='harta') z=partHarta(p);
+  else if(p.t==='cod') z=partCod(p);
+  else if(p.t==='memorie') z=partMemorie(p);
+  else if(p.t==='ordine') z=partOrdine(p);
+  else if(p.t==='premiu') z=partPremiu();
+  else z=partStory(p);
+  return foaie(cap+'<hr class="val">',z.c,z.p);
+}
+function partStory(p){
+  return {c:vorbitor(p.cine,(p.text||[]).map(function(t){ return '<p>'+E(t)+'</p>'; }).join('')),
+          p:'<button class="buton" onclick="inainte()">Continuă ⚓</button>'};
+}
+function partAlege(p){
+  var lit=['A','B','C','D'];
+  var but=A.opt.map(function(o,i){
+    var cls='';
+    if(A.rezolvat) cls=o.ok?' bun':(i===A.ales?' rau':'');
+    else if(A.fbTip==='nu'&&i===A.ales) cls=' rau';
+    return '<button class="opt'+cls+'"'+(A.rezolvat?' disabled':'')+' onclick="raspAlege('+i+')">'+
+      '<span class="litera">'+lit[i]+'</span><span>'+E(o.x)+'</span></button>';
+  }).join('');
+  var extra=p.ceas?'<div style="display:flex;justify-content:center">'+ceasSVG(p.ceas.h,p.ceas.m)+'</div>':'';
+  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+extra+'<div class="optiuni">'+but+'</div>'+blocFeedback(),
+          p:blocActiuni()};
+}
+function raspAlege(i){
+  if(A.rezolvat) return;
+  A.ales=i; var o=A.opt[i];
+  if(o.ok) succes(o.fb||'Exact! Ai socotit bine.'); else esec(o.fb||'Nu e răspunsul bun.');
+}
+function partDecizie(p){
+  var lit=['A','B','C','D'];
+  var doc=p.doc?'<div style="padding:12px 14px;border-radius:10px;background:#fffaf0;border:2px dashed var(--umbra);transform:rotate(-.4deg)">'+
+    '<div class="eticheta" style="text-align:center">'+E(p.doc.titlu)+'</div>'+
+    '<p style="font-family:var(--display);font-weight:900;font-size:clamp(1rem,2.6vh,1.35rem);text-align:center;margin:6px 0">'+E(p.doc.mare)+'</p>'+
+    '<p style="font-size:.62rem;line-height:1.3;color:#8a7350">'+E(p.doc.mic)+'</p></div>':'';
+  var but=p.opt.map(function(o,i){
+    var cls='';
+    if(A.rezolvat&&i===A.ales) cls=(o.v==='bun'?' bun':(o.v==='rau'?' rau':''));
+    return '<button class="opt'+cls+'"'+(A.rezolvat?' disabled':'')+' onclick="raspDecizie('+i+')">'+
+      '<span class="litera">'+lit[i]+'</span><span>'+E(o.x)+'</span></button>';
+  }).join('');
+  var c=vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+doc+'<div class="optiuni">'+but+'</div>';
+  if(A.rezolvat){
+    var o=p.opt[A.ales];
+    c+='<div class="verdict '+(o.v==='bun'?'da':(o.v==='rau'?'nu':'info'))+'">'+
+      '<span class="sm">'+(o.v==='bun'?'🏅':(o.v==='rau'?'🪤':'🧭'))+'</span><div><b>'+
+      (o.v==='bun'?'Alegere de căpitan!':(o.v==='rau'?'Ai căzut în capcană':'Alegere prudentă'))+'</b>'+E(o.fb)+'</div></div>';
+    if(p.invat) c+='<div class="verdict info"><span class="sm">🎓</span><div><b>Ce ai învățat</b>'+E(p.invat)+'</div></div>';
+  }
+  return {c:c,p:(A.rezolvat?'<button class="buton" onclick="inainte()">Mai departe ⚓</button>':'')+
+    '<button class="buton linistit" onclick="citesteAcum()" title="Citește cu voce tare">🔊</button>'};
+}
+function raspDecizie(i){
+  if(A.rezolvat) return;
+  A.ales=i; A.rezolvat=true;
+  var o=A.pas.opt[i];
+  S.dub=Math.max(0,S.dub+(o.dub||0));
+  scor('capcana',o.v==='bun');
+  if(o.v==='bun') sOk(); else if(o.v==='rau') sNu(); else sClic();
+  spune(o.fb+' '+(A.pas.invat||''));
+  salveaza(); render();
+}
+function partHarta(p){
+  var cel='<div class="grila" style="grid-template-columns:repeat('+(p.cols.length+1)+',auto)">';
+  cel+='<div class="cap2"></div>'+p.cols.map(function(c){ return '<div class="cap2">'+c+'</div>'; }).join('');
+  for(var r=1;r<=p.rows;r++){
+    cel+='<div class="cap2">'+r+'</div>';
+    for(var c=0;c<p.cols.length;c++){
+      var id=p.cols[c]+r, cls='celula';
+      if(p.plecare===id) cls+=' plecare';
+      if(A.rezolvat&&id===p.ras) cls+=' corect';
+      else if(A.ales===id&&A.fbTip==='nu') cls+=' gresit';
+      var semn=p.plecare===id?'🌴':((p.marci&&p.marci[id])||'');
+      if(A.rezolvat&&id===p.ras&&!semn) semn='❌';
+      cel+='<button class="'+cls+'"'+(A.rezolvat?' disabled':'')+' onclick="raspHarta(\''+id+'\')" aria-label="'+id+'">'+semn+'</button>';
+    }
+  }
+  cel+='</div>';
+  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+'<div class="zona-harta">'+cel+rozaVant()+'</div>'+blocFeedback(),
+          p:blocActiuni()};
+}
+function raspHarta(id){
+  if(A.rezolvat) return;
+  A.ales=id;
+  if(id===A.pas.ras) succes('Ai găsit locul exact: '+id+'. Sapi și dai de ceva tare!');
+  else esec('La '+id+' nu e nimic. Numără din nou pașii, unul câte unul.');
+}
+function partCod(p){
+  var n=p.ras.length, i, slots='';
+  for(i=0;i<n;i++) slots+='<div class="slot'+(A.buf[i]?'':' gol')+'">'+(A.buf[i]||'·')+'</div>';
+  var pool=p.mod==='litere'?p.pool:['1','2','3','4','5','6','7','8','9','0'];
+  var taste=pool.map(function(t){ return '<button class="tasta" onclick="tastaCod(\''+t+'\')"'+(A.rezolvat?' disabled':'')+'>'+t+'</button>'; }).join('');
+  var cifru=p.cifru?'<div class="cifru">'+p.cifru.map(function(c){ return '<div><b>'+c[0]+'</b>'+c[1]+'</div>'; }).join('')+'</div>':'';
+  var extra='<button class="buton linistit" onclick="stergeCod()"'+(A.rezolvat?' disabled':'')+'>⌫</button>'+
+    '<button class="buton" onclick="verificaCod()"'+(A.rezolvat||A.buf.length<n?' disabled':'')+'>🔓 Verifică</button>'+
+    (p.jurnal?'<button class="buton linistit" onclick="jurnal()">📖 Jurnal</button>':'');
+  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+cifru+
+      '<div class="afisaj">'+slots+'</div><div class="taste'+(pool.length>6?' late':'')+'">'+taste+'</div>'+blocFeedback(),
+    p:blocActiuni(extra)};
+}
+function tastaCod(t){ if(A.rezolvat||A.buf.length>=A.pas.ras.length) return; A.buf.push(t); sClic(); render(); }
+function stergeCod(){ if(A.rezolvat) return; A.buf.pop(); sClic(); render(); }
+function verificaCod(){
+  if(A.rezolvat) return;
+  var d=A.buf.join('');
+  if(d===A.pas.ras) succes('Lacătul se deschide cu un pocnet: '+A.pas.ras+'.');
+  else { esec('Codul '+d+' nu deschide lacătul.'); A.buf=A.rezolvat?A.pas.ras.split(''):[]; render(); }
+}
+function partMemorie(p){
+  var tiles=p.pool.map(function(s,i){
+    return '<button class="tile'+(A.aprins===i?' aprins':'')+'"'+((A.faza!=='raspunde'||A.rezolvat)?' disabled':'')+' onclick="tastaMem('+i+')">'+s+'</button>';
+  }).join('');
+  var ales=A.buf.map(function(i){ return p.pool[i]; }).join(' ');
+  var stare=A.faza==='arata'?'<p class="mica" style="text-align:center">👀 Privește cu atenție...</p>'
+    :'<p class="mica" style="text-align:center">Apasă simbolurile în ordine ('+A.buf.length+' din '+p.lung+')</p>';
+  var extra=(A.faza==='raspunde'&&!A.rezolvat)?'<button class="buton linistit" onclick="aratSir()">🔁 Mai arată (−1 🪙)</button>':'';
+  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+stare+
+      '<div class="sir-ales">'+(ales||'&nbsp;')+'</div><div class="memorie">'+tiles+'</div>'+blocFeedback(),
+    p:blocActiuni(extra)};
+}
+function aratSir(){
+  if(A.faza==='raspunde'&&S.dub>0) S.dub--;
+  A.faza='arata'; A.buf=[]; A.aprins=-1;
+  var g=A.gen, i=0;
+  function pas(){
+    if(A.gen!==g) return;
+    if(i>=A.seq.length){ A.aprins=-1; A.faza='raspunde'; render(); return; }
+    A.aprins=A.seq[i]; ton(392+A.seq[i]*90,.22); render();
+    setTimeout(function(){ if(A.gen!==g) return; A.aprins=-1; render(); i++; setTimeout(pas,190); },440);
+  }
+  setTimeout(pas,650); render();
+}
+function tastaMem(i){
+  if(A.rezolvat||A.faza!=='raspunde') return;
+  ton(392+i*90,.16); A.buf.push(i);
+  var k=A.buf.length-1;
+  if(A.buf[k]!==A.seq[k]){
+    A.buf=[]; esec('Ups, nu era ăsta. Ascultă șirul încă o dată.');
+    if(A.rezolvat) A.buf=A.seq.slice(); else A.faza='raspunde';
+    render(); return;
+  }
+  if(A.buf.length===A.seq.length){ succes('Ai repetat tot șirul, fără nicio greșeală!'); return; }
+  render();
+}
+function partOrdine(p){
+  var tiles=p.items.map(function(v){
+    var luat=A.buf.indexOf(v)>=0;
+    return '<button class="tile"'+((luat||A.rezolvat)?' disabled':'')+' onclick="tastaOrd('+v+')" style="font-size:clamp(1rem,2.6vh,1.4rem);font-family:var(--log)'+(luat?';opacity:.3':'')+'">'+v+'</button>';
+  }).join('');
+  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+
+      '<p class="mica" style="text-align:center">Ordinea ta: <b style="font-family:var(--log)">'+(A.buf.length?A.buf.join(' → '):'—')+'</b></p>'+
+      '<div class="memorie">'+tiles+'</div>'+blocFeedback(),
+    p:blocActiuni()};
+}
+function tastaOrd(v){
+  if(A.rezolvat) return;
+  var min=Math.min.apply(null,A.ramase);
+  if(v!==min){
+    A.buf=[]; A.ramase=A.pas.items.slice();
+    esec('Scoica de '+v+' nu e cea mai mică dintre cele rămase. O luăm de la capăt, calm.');
+    if(A.rezolvat) A.buf=A.pas.items.slice().sort(function(a,b){ return a-b; });
+    render(); return;
+  }
+  A.buf.push(v); A.ramase.splice(A.ramase.indexOf(v),1); sClic();
+  if(!A.ramase.length) succes('Toate scoicile sunt la locul lor, de la mică la mare!');
+  else render();
+}
+function partPremiu(){
+  var I=INSULE[S.ins];
+  if(!A.acordat){
+    A.acordat=true;
+    if(I.obiect&&S.obiecte.map(function(o){ return o.n; }).indexOf(I.obiect.n)<0) S.obiecte.push(I.obiect);
+    if(I.indiciu&&S.indicii.map(function(c){ return c.poz; }).indexOf(I.indiciu.poz)<0) S.indicii.push(I.indiciu);
+    S.dub+=8; sPremiu(); confetti(); salveaza();
+    spune('Ai primit '+I.obiect.n+'. '+(I.indiciu?I.indiciu.text:''));
+  }
+  return {c:'<div style="text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center">'+
+      '<div style="font-size:clamp(34px,7vh,56px);line-height:1">'+I.obiect.ic+'</div>'+
+      '<h2 class="titlu" style="font-size:clamp(1.05rem,2.8vh,1.5rem)">Ai primit: '+E(I.obiect.n)+'</h2>'+
+      '<p>+8 dubloni pentru insula terminată 🪙</p></div>'+
+      (I.indiciu?'<div class="verdict info"><span class="sm">🔎</span><div><b>Indiciu pentru lacătul final</b>'+E(I.indiciu.text)+'</div></div>':''),
+    p:'<button class="buton" onclick="inainte()">Continuă ⚓</button>'+
+      '<button class="buton linistit" onclick="jurnal()">📖 Jurnal</button>'};
+}
+
+/* ═══════════ JURNAL ═══════════ */
+function insigne(){
+  return [{ic:'🧭',n:'Navigator',cat:'nav'},{ic:'🔢',n:'Socotitorul',cat:'mat'},
+    {ic:'🗝️',n:'Descuietorul',cat:'cod'},{ic:'🧠',n:'Memorie de elefant',cat:'mem'},
+    {ic:'🕵️',n:'Detectivul',cat:'logic'},{ic:'🪤',n:'Nu mă păcălești',cat:'capcana'}
+  ].map(function(b){
+    var s=S.st[b.cat]; b.castigat=s.t>0&&s.ok===s.t; b.text=s.ok+'/'+s.t; return b;
+  });
+}
+function fereastra(cap,corp,pod){
+  document.getElementById('voal').innerHTML='<div class="voal" onclick="if(event.target===this)inchide()">'+
+    '<div class="foaie"><button class="inchide" onclick="inchide()" aria-label="Închide">✕</button>'+
+    '<div class="cap">'+cap+'</div><div class="corp">'+corp+'</div><div class="pod">'+pod+'</div></div></div>';
+}
+function jurnal(){
+  var ind=S.indicii.slice().sort(function(a,b){ return a.poz-b.poz; });
+  var slotsCod='';
+  for(var i=1;i<=5;i++){
+    var g=null; ind.forEach(function(c){ if(c.poz===i) g=c; });
+    slotsCod+='<div class="slot'+(g?'':' gol')+'">'+(g?g.cif:'?')+'</div>';
+  }
+  var am=S.obiecte.map(function(o){ return o.n; });
+  var col=INSULE.map(function(I){ return I.obiect; }).map(function(o){
+    var are=am.indexOf(o.n)>=0;
+    return '<div class="obiect'+(are?'':' gol')+'"><span class="ic">'+(are?o.ic:'❔')+'</span>'+(are?E(o.n):'necunoscut')+'</div>';
+  }).join('');
+  var lista=ind.length?ind.map(function(c){
+    return '<div class="indiciu"><span class="nr">'+c.cif+'</span><span>Poziția '+c.poz+' din cod · '+E(c.text)+'</span></div>';
+  }).join(''):'<p class="mica">Încă niciun indiciu. Fiecare insulă îți dă o cifră din codul final.</p>';
+  var ins=insigne().map(function(b){
+    return '<span class="insigna'+(b.castigat?'':' gol')+'">'+b.ic+' '+b.n+' <b style="font-family:var(--log)">'+b.text+'</b></span>';
+  }).join('');
+  fereastra(
+    '<div class="eticheta">Jurnal de bord</div><h2 class="titlu" style="font-size:clamp(1.05rem,2.6vh,1.4rem)">'+E(S.nume)+' '+S.av+'</h2>'+
+    '<p class="mica">'+(S.niv==='mus'?'Mus de punte (clasele 1–2)':'Căpitan (clasele 3–4)')+' · 🪙 '+S.dub+' dubloni</p><hr class="val">',
+    '<div><div class="eticheta">Codul lacătului final</div><div class="afisaj" style="justify-content:flex-start;margin-top:5px">'+slotsCod+'</div>'+
+      '<p class="mica">Cifrele stau în ordinea pozițiilor: 1, 2, 3, 4, 5.</p></div>'+
+    '<div><div class="eticheta">Indicii adunate</div><div class="indicii" style="margin-top:5px">'+lista+'</div></div>'+
+    '<div><div class="eticheta">Colecția ta</div><div class="colectie" style="margin-top:5px">'+col+'</div></div>'+
+    '<div><div class="eticheta">Insigne</div><div class="insigne" style="margin-top:5px">'+ins+'</div>'+
+      '<p class="mica">Insigna se câștigă dacă rezolvi toate probele de acel fel din prima încercare.</p></div>',
+    '<button class="buton" onclick="inchide()">Închide jurnalul</button>');
+  sClic();
+}
+function fereastraVoce(){
+  incarcaVoci();
+  var ro=vociRo(), alte=VOCI.filter(function(v){ return !/^ro/i.test(v.lang); });
+  var lista='';
+  if(!VOCI.length){
+    lista='<div class="verdict info"><span class="sm">🎙️</span><div><b>Nicio voce găsită</b>Dispozitivul acesta nu are voci instalate pentru browser. Pe Windows le adaugi din Setări → Oră și limbă → Voce.</div></div>';
+  } else {
+    if(!ro.length) lista+='<div class="verdict info"><span class="sm">⚠️</span><div><b>Nicio voce românească</b>Nu am găsit o voce în română pe acest dispozitiv. Poți alege una din lista de mai jos, dar va citi cu accent străin. În Microsoft Edge apare de obicei vocea feminină «Alina».</div></div>';
+    lista+='<div class="lista-voci">'+ro.concat(alte).slice(0,14).map(function(v,i){
+      var f=FEM.test(v.name);
+      return '<button class="voce-op'+(VOCE&&VOCE.name===v.name?' ales':'')+'" onclick="alegeVoce('+i+')">'+
+        (f?'👩':'🧔')+'<span>'+E(v.name)+'<small>'+E(v.lang)+(f?' · voce feminină':'')+'</small></span></button>';
+    }).join('')+'</div>';
+  }
+  fereastra(
+    '<div class="eticheta">Naratoarea</div><h2 class="titlu" style="font-size:clamp(1.05rem,2.6vh,1.4rem)">Cine citește povestea</h2><hr class="val">',
+    '<p>Povestea și probele pot fi citite cu voce tare — util pentru clasele 1–2, care încă silabisesc.</p>'+
+    '<div><button class="buton'+(S.voce?'':' linistit')+'" onclick="comutaVoce();fereastraVoce()">'+(S.voce?'🔊 Naratoarea este PORNITĂ':'🔇 Naratoarea este OPRITĂ')+'</button></div>'+
+    lista,
+    '<button class="buton linistit" onclick="spune(\'Bună! Eu sunt naratoarea. Îți voi citi povestea comorii.\')">▶︎ Ascultă proba</button>'+
+    '<button class="buton" onclick="inchide()">Gata</button>');
+  sClic();
+}
+function alegeVoce(i){
+  var ro=vociRo(), alte=VOCI.filter(function(v){ return !/^ro/i.test(v.lang); });
+  var v=ro.concat(alte)[i];
+  if(!v) return;
+  VOCE=v; S.vociNume=v.name; S.voce=true; salveaza();
+  spune('Am ales vocea aceasta. Îți voi citi povestea.');
+  fereastraVoce();
+}
+function inchide(){ document.getElementById('voal').innerHTML=''; sClic(); }
+
+/* ═══════════ DIPLOMA ═══════════ */
+function ecranFinal(){
+  var min=Math.max(1,Math.round((Date.now()-S.start)/60000));
+  var ins=insigne(), cast=ins.filter(function(b){ return b.castigat; });
+  var tot=0,ok=0; for(var k in S.st){ tot+=S.st[k].t; ok+=S.st[k].ok; }
+  var cap='<div class="eticheta">Diploma de pirat</div>'+
+    '<h1 class="titlu" style="font-size:clamp(1.2rem,3.2vh,1.9rem)">'+E(S.nume)+' '+S.av+'</h1>'+
+    '<p class="subtitlu">a găsit Comoara Căpitanului Barbă-Sură, trecând prin toate cele cinci insule ale Mărilor Uitate.</p><hr class="val">';
+  var corp='<div class="stat">'+
+      '<div><b>'+ok+'/'+tot+'</b><span>probe din prima</span></div>'+
+      '<div><b>'+S.dub+'</b><span>dubloni</span></div>'+
+      '<div><b>'+S.obiecte.length+'</b><span>obiecte</span></div>'+
+      '<div><b>'+cast.length+'</b><span>insigne</span></div>'+
+      '<div><b>'+min+'</b><span>minute pe mare</span></div>'+
+    '</div>'+
+    '<div><div class="eticheta">Insignele tale</div><div class="insigne" style="margin-top:5px">'+
+      ins.map(function(b){ return '<span class="insigna'+(b.castigat?'':' gol')+'">'+b.ic+' '+b.n+'</span>'; }).join('')+'</div></div>'+
+    '<div class="verdict info"><span class="sm">🧔</span><div><b>Ultimele cuvinte ale căpitanului</b>'+
+      'Aurul se cheltuie într-o vară. Mintea care întreabă «de ce?» și care citește până la capăt nu ți-o ia nimeni niciodată. Drum bun, '+E(S.nume)+'.</div></div>';
+  var pod='<button class="buton" onclick="dinNou()">🔁 Joacă din nou</button>'+
+    '<button class="buton linistit" onclick="altNivel()">'+(S.niv==='mus'?'🧭 Nivelul Căpitan':'⛵ Nivelul Mus')+'</button>'+
+    '<button class="buton linistit" onclick="jurnal()">📖 Jurnal</button>';
+  return foaie(cap,corp,pod);
+}
+function dinNou(){ resetJoc(S.niv); }
+function altNivel(){ resetJoc(S.niv==='mus'?'cap':'mus'); }
+function resetJoc(niv){
+  var n=S.nume,a=S.av,v=S.voce,vn=S.vociNume,su=S.sunet;
+  stergeSalvare(); S=stareNoua();
+  S.nume=n; S.av=a; S.niv=niv; S.voce=v; S.vociNume=vn; S.sunet=su; S.ecran='chart';
+  salveaza(); render();
+}
+
+/* ═══════════ RANDARE ═══════════ */
+function render(){
+  var c='';
+  if(S.ecran==='intro') c=ecranIntro();
+  else if(S.ecran==='setup') c=ecranSetup();
+  else if(S.ecran==='chart') c=ecranHarta();
+  else if(S.ecran==='joc') c=ecranJoc();
+  else if(S.ecran==='final') c=ecranFinal();
+  app().innerHTML=bara()+c;
+  if(S.ecran==='joc'&&A.pas&&A.pas.t==='film'){
+    if(A.filmGata) terminaFilm(true); else pornesteFilm();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   PELICULA · secvențe cinematice desenate pe pânză
+   ═══════════════════════════════════════════════════════ */
+var FGEN=0, AMB=null;
+var VW=1000, VH=562.5;
+
+function lerp(a,b,u){ return a+(b-a)*u; }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function ease(u){ return 1-Math.pow(1-clamp(u,0,1),3); }
+function zg(i){ var s=Math.sin(i*127.1+311.7)*43758.5453; return s-Math.floor(s); }
+
+var PAL={
+  zori:{sus:'#26456b',mij:'#8a6a86',jos:'#f2a765',apa1:'#1e5474',apa2:'#0a2a3c',glob:'#ffd9a0',gx:.74,gy:.30,gr:46},
+  zi:{sus:'#1f6f9e',mij:'#6fb6d8',jos:'#c6e7f2',apa1:'#17698f',apa2:'#0a3247',glob:'#fff6d8',gx:.82,gy:.16,gr:34},
+  apus:{sus:'#331f4d',mij:'#a34b52',jos:'#f0803c',apa1:'#4a2c4a',apa2:'#160f28',glob:'#ffc06a',gx:.28,gy:.44,gr:58},
+  noapte:{sus:'#04101e',mij:'#0a2136',jos:'#173d55',apa1:'#0d2c42',apa2:'#040f19',glob:'#e6eeff',gx:.22,gy:.20,gr:26},
+  furtuna:{sus:'#0a141f',mij:'#22313e',jos:'#4a5763',apa1:'#1c2a36',apa2:'#080e15',glob:null,gx:.5,gy:.2,gr:0}
+};
+function pal(n){ return PAL[n]||PAL.zi; }
+
+function cerul(x,H0,p,t,par){
+  var g=x.createLinearGradient(0,0,0,H0);
+  g.addColorStop(0,p.sus); g.addColorStop(.55,p.mij); g.addColorStop(1,p.jos);
+  x.fillStyle=g; x.fillRect(-300,-200,VW+600,H0+200);
+  if(p===PAL.noapte||(par&&par.stele)){
+    for(var i=0;i<70;i++){
+      var sx=zg(i)*VW, sy=zg(i+90)*H0*.85, a=.35+.65*Math.abs(Math.sin(t*1.1+i));
+      x.fillStyle='rgba(255,255,255,'+(a*.7).toFixed(2)+')'; x.fillRect(sx,sy,1.6,1.6);
+    }
+  }
+  if(p.glob){
+    var gx=p.gx*VW, gy=p.gy*H0;
+    var h=x.createRadialGradient(gx,gy,2,gx,gy,p.gr*3.4);
+    h.addColorStop(0,p.glob); h.addColorStop(.16,p.glob); h.addColorStop(1,'rgba(255,220,160,0)');
+    x.fillStyle=h; x.beginPath(); x.arc(gx,gy,p.gr*3.4,0,7); x.fill();
+    x.fillStyle=p.glob; x.beginPath(); x.arc(gx,gy,p.gr,0,7); x.fill();
+  }
+  for(var c=0;c<5;c++){
+    var cx=((zg(c+5)*1.5*VW)+t*(6+c*3))%(VW+400)-200, cy=H0*(.12+zg(c+21)*.4), s=50+zg(c+33)*70;
+    x.fillStyle='rgba(255,255,255,'+(p===PAL.furtuna?.07:.16)+')';
+    x.beginPath(); x.ellipse(cx,cy,s*1.9,s*.5,0,0,7); x.ellipse(cx+s*.7,cy-s*.2,s*1.1,s*.42,0,0,7); x.fill();
+  }
+}
+function marea(x,y0,p,t,val){
+  val=val||1;
+  var g=x.createLinearGradient(0,y0,0,VH);
+  g.addColorStop(0,p.apa1); g.addColorStop(1,p.apa2);
+  x.fillStyle=g; x.fillRect(-300,y0,VW+600,VH-y0+200);
+  if(p.glob){
+    var gg=x.createLinearGradient(0,y0,0,VH);
+    gg.addColorStop(0,'rgba(255,214,150,.16)'); gg.addColorStop(1,'rgba(255,214,150,0)');
+    x.fillStyle=gg; x.beginPath();
+    x.moveTo(p.gx*VW-16,y0); x.lineTo(p.gx*VW+16,y0); x.lineTo(p.gx*VW+210,VH); x.lineTo(p.gx*VW-210,VH);
+    x.closePath(); x.fill();
+  }
+  for(var b=0;b<7;b++){
+    var yy=y0+(VH-y0)*Math.pow(b/6,1.5)+6, amp=(2+b*2.4)*val, vit=(.5+b*.42)*val;
+    x.strokeStyle='rgba(255,255,255,'+(.05+b*.028).toFixed(3)+')';
+    x.lineWidth=1.4+b*.5; x.beginPath();
+    for(var i=-100;i<=VW+100;i+=14){
+      var yv=yy+Math.sin(i*.012+t*vit+b)*amp+Math.sin(i*.031-t*vit*.7)*amp*.4;
+      i===-100?x.moveTo(i,yv):x.lineTo(i,yv);
+    }
+    x.stroke();
+  }
+}
+function corabie(x,cx,cy,s,t,val){
+  x.save(); x.translate(cx,cy+Math.sin(t*1.3)*4*(val||1)); x.rotate(Math.sin(t*1.1)*.04*(val||1)); x.scale(s,s);
+  x.fillStyle='rgba(0,0,0,.22)'; x.beginPath(); x.ellipse(0,26,70,9,0,0,7); x.fill();
+  x.fillStyle='#5b3a1e'; x.beginPath();
+  x.moveTo(-64,-2); x.quadraticCurveTo(-54,26,0,30); x.quadraticCurveTo(58,26,68,-2); x.closePath(); x.fill();
+  x.fillStyle='#7d5227'; x.fillRect(-62,-11,130,10);
+  x.fillStyle='#3f2a14'; x.fillRect(-2.5,-112,5,104); x.fillRect(-40,-70,80,4);
+  x.fillStyle='#efe1bf';
+  x.beginPath(); x.moveTo(1,-106); x.quadraticCurveTo(48+Math.sin(t*1.9)*5,-80,1,-56); x.closePath(); x.fill();
+  x.beginPath(); x.moveTo(1,-52); x.quadraticCurveTo(58+Math.sin(t*1.9+1)*6,-26,1,-10); x.closePath(); x.fill();
+  x.fillStyle='#d8c197';
+  x.beginPath(); x.moveTo(-1,-106); x.quadraticCurveTo(-36-Math.sin(t*1.9)*4,-82,-1,-58); x.closePath(); x.fill();
+  x.fillStyle='#b53f2c';
+  x.beginPath(); x.moveTo(0,-112); x.lineTo(28+Math.sin(t*5.5)*6,-105); x.lineTo(0,-99); x.closePath(); x.fill();
+  x.restore();
+}
+function silueta(x,cx,y,w,h,tip,cul,t){
+  x.fillStyle=cul; x.beginPath();
+  if(tip==='vulcan'){
+    x.moveTo(cx-w,y); x.lineTo(cx-w*.24,y-h); x.lineTo(cx+w*.22,y-h*.96); x.lineTo(cx+w,y); x.closePath(); x.fill();
+    for(var i=0;i<9;i++){
+      var u=(t*.16+i/9)%1, r=16+u*72;
+      x.fillStyle='rgba(150,150,155,'+((1-u)*.3).toFixed(2)+')';
+      x.beginPath(); x.arc(cx+Math.sin(u*5+i)*26,y-h-u*150,r,0,7); x.fill();
+    }
+    return;
+  }
+  if(tip==='craniu'){
+    x.moveTo(cx-w,y); x.quadraticCurveTo(cx-w*.95,y-h*1.15,cx,y-h*1.15);
+    x.quadraticCurveTo(cx+w*.95,y-h*1.15,cx+w,y); x.closePath(); x.fill();
+    x.fillStyle='rgba(0,0,0,.45)';
+    x.beginPath(); x.ellipse(cx-w*.34,y-h*.62,w*.17,h*.3,0,0,7); x.fill();
+    x.beginPath(); x.ellipse(cx+w*.34,y-h*.62,w*.17,h*.3,0,0,7); x.fill();
+    x.beginPath(); x.moveTo(cx,y-h*.42); x.lineTo(cx-w*.1,y-h*.2); x.lineTo(cx+w*.1,y-h*.2); x.closePath(); x.fill();
+    return;
+  }
+  if(tip==='stanca'){
+    x.moveTo(cx-w,y);
+    for(var k=0;k<=7;k++) x.lineTo(cx-w+(2*w)*(k/7),y-h*(.35+zg(k*3.7)*.8));
+    x.lineTo(cx+w,y); x.closePath(); x.fill(); return;
+  }
+  x.moveTo(cx-w,y); x.quadraticCurveTo(cx,y-h*1.5,cx+w,y); x.closePath(); x.fill();
+  for(var pI=0;pI<3;pI++){
+    var px2=cx-w*.4+pI*w*.4, ph=h*(.75+zg(pI+7)*.4);
+    x.strokeStyle=cul; x.lineWidth=5; x.lineCap='round';
+    x.beginPath(); x.moveTo(px2,y-h*.5); x.quadraticCurveTo(px2+7,y-h*.5-ph*.6,px2+14,y-h*.5-ph); x.stroke();
+    var qx=px2+14, qy=y-h*.5-ph;
+    for(var f=0;f<6;f++){
+      var a=-3+f*.6, lx=Math.cos(a), ly=Math.sin(a);
+      x.beginPath(); x.moveTo(qx,qy);
+      x.quadraticCurveTo(qx+lx*15-ly*7,qy+ly*15+lx*7,qx+lx*30,qy+ly*30+9);
+      x.quadraticCurveTo(qx+lx*15+ly*7,qy+ly*15-lx*7,qx,qy); x.fill();
+    }
+  }
+  x.lineCap='butt';
+}
+function pasari(x,t,n,y0){
+  x.strokeStyle='rgba(255,255,255,.55)'; x.lineWidth=2.2;
+  for(var i=0;i<(n||4);i++){
+    var px=((t*(22+i*7)+zg(i)*VW)%(VW+140))-70, py=y0+zg(i+3)*70+Math.sin(t*1.4+i)*7;
+    var w=7+Math.abs(Math.sin(t*4+i))*6;
+    x.beginPath(); x.moveTo(px-10,py); x.quadraticCurveTo(px-5,py-w,px,py);
+    x.quadraticCurveTo(px+5,py-w,px+10,py); x.stroke();
+  }
+}
+
+/* ═══════════ PERSONAJE DESENATE ═══════════
+   Fiecare desenează într-un pătrat de 100 de unități, centrat în 0,0. */
+var PERS={};
+PERS.papagal=function(x,t,zbor){
+  var flap=zbor?Math.sin(t*15)*.95:Math.sin(t*2)*.07;
+  x.fillStyle='#1d7a3c';
+  x.beginPath(); x.moveTo(10,4); x.quadraticCurveTo(40,12,52,36); x.quadraticCurveTo(28,24,8,18); x.fill();
+  x.fillStyle='#2fa250'; x.beginPath(); x.ellipse(0,4,23,29,.14,0,7); x.fill();
+  x.fillStyle='#f3cb52'; x.beginPath(); x.ellipse(-7,10,13,19,.1,0,7); x.fill();
+  x.save(); x.translate(3,-5); x.rotate(flap);
+  x.fillStyle='#25883f'; x.beginPath(); x.ellipse(5,11,12,23,.32,0,7); x.fill();
+  x.fillStyle='#1a6e31'; x.beginPath(); x.ellipse(8,17,6,15,.32,0,7); x.fill();
+  x.restore();
+  x.fillStyle='#37b95b'; x.beginPath(); x.arc(-9,-27,18,0,7); x.fill();
+  x.fillStyle='#e8892f'; x.beginPath();
+  x.moveTo(-24,-30); x.quadraticCurveTo(-41,-25,-30,-13); x.quadraticCurveTo(-25,-20,-20,-25); x.fill();
+  x.fillStyle='#fff'; x.beginPath(); x.arc(-15,-32,5.6,0,7); x.arc(-1,-32,5.6,0,7); x.fill();
+  x.fillStyle='#141414'; x.beginPath(); x.arc(-15,-32,2.5,0,7); x.arc(-1,-32,2.5,0,7); x.fill();
+  x.strokeStyle='#20201e'; x.lineWidth=2.3;
+  x.beginPath(); x.arc(-15,-32,7.4,0,7); x.stroke();
+  x.beginPath(); x.arc(-1,-32,7.4,0,7); x.stroke();
+  x.beginPath(); x.moveTo(-7.6,-32); x.lineTo(-6.4,-32); x.moveTo(6.4,-33); x.lineTo(13,-36); x.stroke();
+  x.strokeStyle='#c9862c'; x.lineWidth=3.4; x.lineCap='round';
+  x.beginPath(); x.moveTo(-5,30); x.lineTo(-5,39); x.moveTo(6,30); x.lineTo(6,39); x.stroke();
+  x.lineCap='butt';
+};
+PERS.pescarus=function(x,t,zbor){
+  var flap=zbor?Math.sin(t*13)*1.05:Math.sin(t*2)*.06;
+  x.fillStyle='#c8d2da'; x.beginPath(); x.moveTo(14,2); x.quadraticCurveTo(40,8,48,22); x.quadraticCurveTo(28,16,12,14); x.fill();
+  x.fillStyle='#f4f7fa'; x.beginPath(); x.ellipse(0,4,25,20,.1,0,7); x.fill();
+  x.save(); x.translate(2,-4); x.rotate(flap);
+  x.fillStyle='#aab7c2'; x.beginPath(); x.ellipse(4,8,11,24,.4,0,7); x.fill();
+  x.fillStyle='#8fa0ad'; x.beginPath(); x.ellipse(7,14,5,15,.4,0,7); x.fill();
+  x.restore();
+  x.fillStyle='#fbfdff'; x.beginPath(); x.arc(-15,-19,15,0,7); x.fill();
+  x.fillStyle='#f0a92c'; x.beginPath();
+  x.moveTo(-27,-20); x.lineTo(-45,-15); x.lineTo(-27,-11); x.closePath(); x.fill();
+  x.fillStyle='#171717'; x.beginPath(); x.arc(-18,-23,3,0,7); x.fill();
+  x.strokeStyle='#f0a92c'; x.lineWidth=3.2; x.lineCap='round';
+  x.beginPath(); x.moveTo(-3,22); x.lineTo(-3,32); x.moveTo(7,22); x.lineTo(7,32); x.stroke();
+  x.lineCap='butt';
+};
+PERS.sirena=function(x,t){
+  var un=Math.sin(t*1.5);
+  x.fillStyle='#1f8f96';
+  x.beginPath(); x.moveTo(-9,4); x.quadraticCurveTo(16+un*5,26,2,44);
+  x.quadraticCurveTo(-14,26,-9,4); x.fill();
+  x.fillStyle='#2bb0b4';
+  x.beginPath(); x.moveTo(2,42); x.quadraticCurveTo(-24,44+un*4,-30,34);
+  x.quadraticCurveTo(-8,40,2,32); x.quadraticCurveTo(16,40,30,32);
+  x.quadraticCurveTo(26,46+un*4,2,42); x.fill();
+  x.fillStyle='#e8b48c'; x.beginPath(); x.ellipse(-6,-14,13,19,.06,0,7); x.fill();
+  x.fillStyle='#2f9aa0'; x.beginPath(); x.ellipse(-6,-8,13.5,8,0,0,7); x.fill();
+  x.strokeStyle='#e8b48c'; x.lineWidth=6; x.lineCap='round';
+  x.beginPath(); x.moveTo(-3,-18); x.quadraticCurveTo(16,-12,20+un*3,-26); x.stroke();
+  x.fillStyle='#e8b48c'; x.beginPath(); x.arc(-8,-38,14,0,7); x.fill();
+  x.fillStyle='#3fa45c';
+  x.beginPath(); x.moveTo(-8,-52); x.quadraticCurveTo(-30,-46,-30,-16);
+  x.quadraticCurveTo(-24,-24,-20,-36); x.quadraticCurveTo(-20,-48,-8,-50); x.fill();
+  x.beginPath(); x.moveTo(-8,-52); x.quadraticCurveTo(12,-48,12,-20);
+  x.quadraticCurveTo(6,-30,4,-38); x.quadraticCurveTo(4,-48,-8,-50); x.fill();
+  x.fillStyle='#171717'; x.beginPath(); x.arc(-13,-38,2.4,0,7); x.arc(-3,-38,2.4,0,7); x.fill();
+  x.strokeStyle='#c4756a'; x.lineWidth=1.8;
+  x.beginPath(); x.arc(-8,-33,4,.3,2.8); x.stroke();
+  x.lineCap='butt';
+};
+PERS.pustnic=function(x,t){
+  var un=Math.sin(t*1.1)*2;
+  x.fillStyle='#4a4a52';
+  x.beginPath(); x.moveTo(0,-24); x.lineTo(-26,46); x.lineTo(26,46); x.closePath(); x.fill();
+  x.fillStyle='#5b5b64';
+  x.beginPath(); x.moveTo(0,-24); x.lineTo(-26,46); x.lineTo(-4,46); x.lineTo(-4,-20); x.closePath(); x.fill();
+  x.strokeStyle='#6b5230'; x.lineWidth=5; x.lineCap='round';
+  x.beginPath(); x.moveTo(22,-42+un); x.lineTo(28,46); x.stroke();
+  x.fillStyle='#d8c9a8'; x.beginPath(); x.arc(22,-46+un,7,0,7); x.fill();
+  x.fillStyle='#e0c39c'; x.beginPath(); x.arc(0,-34,15,0,7); x.fill();
+  x.fillStyle='#4a4a52';
+  x.beginPath(); x.moveTo(-17,-36); x.quadraticCurveTo(0,-60,17,-36);
+  x.quadraticCurveTo(0,-46,-17,-36); x.fill();
+  x.fillStyle='#eceae4';
+  x.beginPath(); x.moveTo(-13,-28); x.quadraticCurveTo(-16,10,0,18);
+  x.quadraticCurveTo(16,10,13,-28); x.quadraticCurveTo(0,-20,-13,-28); x.fill();
+  x.fillStyle='#171717'; x.beginPath(); x.arc(-6,-34,2.3,0,7); x.arc(6,-34,2.3,0,7); x.fill();
+  x.strokeStyle='#c9c4ba'; x.lineWidth=2;
+  x.beginPath(); x.moveTo(-13,-40); x.lineTo(-3,-38); x.moveTo(13,-40); x.lineTo(3,-38); x.stroke();
+  x.lineCap='butt';
+};
+PERS.negustor=function(x,t){
+  var un=Math.sin(t*2.4)*1.6;
+  x.fillStyle='#6b4a2a';
+  x.beginPath(); x.moveTo(0,-16); x.lineTo(-24,46); x.lineTo(24,46); x.closePath(); x.fill();
+  x.fillStyle='#8a6238';
+  x.beginPath(); x.moveTo(-6,-16); x.lineTo(-24,46); x.lineTo(-8,46); x.lineTo(-2,-14); x.closePath(); x.fill();
+  x.fillStyle='#c8a34e'; x.fillRect(-8,14,16,7);
+  x.fillStyle='#e6bd93'; x.beginPath(); x.arc(0,-30,15,0,7); x.fill();
+  x.fillStyle='#4e3418'; x.beginPath(); x.ellipse(0,-44,32,7,0,0,7); x.fill();
+  x.fillStyle='#5e401d'; x.beginPath(); x.ellipse(0,-52,15,11,0,0,7); x.fill();
+  x.fillStyle='#b53f2c'; x.fillRect(-15,-48,30,5);
+  x.fillStyle='#171717';
+  x.beginPath(); x.arc(-6,-32,2.3,0,7); x.arc(6,-32,2.3,0,7); x.fill();
+  x.strokeStyle='#171717'; x.lineWidth=1.8;
+  x.beginPath(); x.moveTo(-11,-37); x.lineTo(-2,-35); x.moveTo(11,-37); x.lineTo(2,-35); x.stroke();
+  x.fillStyle='#fff';
+  x.beginPath(); x.moveTo(-8,-24+un*.2); x.quadraticCurveTo(0,-16,8,-24); x.quadraticCurveTo(0,-21,-8,-24); x.fill();
+  x.strokeStyle='#e6bd93'; x.lineWidth=6; x.lineCap='round';
+  x.beginPath(); x.moveTo(-14,-6); x.quadraticCurveTo(-26,6+un,-18,16); x.stroke();
+  x.beginPath(); x.moveTo(14,-6); x.quadraticCurveTo(26,6-un,18,16); x.stroke();
+  x.lineCap='butt';
+};
+PERS.sarpe=function(x,t){
+  var un=Math.sin(t*2)*4;
+  x.strokeStyle='#2f8a3f'; x.lineWidth=15; x.lineCap='round'; x.lineJoin='round';
+  x.beginPath(); x.moveTo(42,34);
+  x.quadraticCurveTo(6,40+un,10,12); x.quadraticCurveTo(14,-12,-14,-10+un);
+  x.quadraticCurveTo(-34,-8,-32,-26); x.stroke();
+  x.strokeStyle='#57b35f'; x.lineWidth=7;
+  x.beginPath(); x.moveTo(42,34);
+  x.quadraticCurveTo(6,40+un,10,12); x.quadraticCurveTo(14,-12,-14,-10+un);
+  x.quadraticCurveTo(-34,-8,-32,-26); x.stroke();
+  x.fillStyle='#2f8a3f'; x.beginPath(); x.ellipse(-33,-32,13,10,-.3,0,7); x.fill();
+  x.fillStyle='#f5e14a'; x.beginPath(); x.arc(-38,-35,3.4,0,7); x.fill();
+  x.fillStyle='#171717'; x.beginPath(); x.arc(-38.5,-35,1.6,0,7); x.fill();
+  x.strokeStyle='#c9333f'; x.lineWidth=2.4;
+  x.beginPath(); x.moveTo(-44,-30); x.lineTo(-56,-28+un*.6);
+  x.moveTo(-50,-29); x.lineTo(-56,-34+un*.6); x.stroke();
+  x.lineCap='butt'; x.lineJoin='miter';
+};
+PERS.cheie=function(x,t){
+  x.rotate(Math.sin(t*1.4)*.12);
+  x.strokeStyle='#c9862c'; x.lineWidth=8; x.lineCap='round';
+  x.beginPath(); x.arc(0,-22,16,0,7); x.stroke();
+  x.lineWidth=9; x.beginPath(); x.moveTo(0,-6); x.lineTo(0,36); x.stroke();
+  x.lineWidth=7;
+  x.beginPath(); x.moveTo(0,20); x.lineTo(15,20); x.moveTo(0,32); x.lineTo(12,32); x.stroke();
+  x.strokeStyle='#f0c069'; x.lineWidth=3;
+  x.beginPath(); x.arc(0,-22,16,3.6,5.4); x.stroke();
+  x.lineCap='butt';
+};
+PERS.harta=function(x,t){
+  x.rotate(Math.sin(t*.9)*.06);
+  x.fillStyle='#efe0bb'; x.strokeStyle='#a8874f'; x.lineWidth=3;
+  x.beginPath();
+  x.moveTo(-40,-30); x.lineTo(-20,-34); x.lineTo(6,-28); x.lineTo(30,-33); x.lineTo(42,-26);
+  x.lineTo(38,30); x.lineTo(12,34); x.lineTo(-14,28); x.lineTo(-38,33); x.closePath();
+  x.fill(); x.stroke();
+  x.strokeStyle='#7d5a2c'; x.lineWidth=2.4;
+  x.beginPath(); x.moveTo(-26,14); x.quadraticCurveTo(-4,-14,24,6); x.stroke();
+  x.setLineDash([4,5]);
+  x.beginPath(); x.moveTo(-22,-14); x.lineTo(18,16); x.stroke(); x.setLineDash([]);
+  x.strokeStyle='#b53f2c'; x.lineWidth=4;
+  x.beginPath(); x.moveTo(14,10); x.lineTo(24,22); x.moveTo(24,10); x.lineTo(14,22); x.stroke();
+};
+PERS.felinar=function(x,t){
+  var fl=1+Math.sin(t*8)*.08;
+  var g=x.createRadialGradient(0,2,4,0,2,54*fl);
+  g.addColorStop(0,'rgba(255,214,130,.6)'); g.addColorStop(1,'rgba(255,214,130,0)');
+  x.fillStyle=g; x.beginPath(); x.arc(0,2,54*fl,0,7); x.fill();
+  x.strokeStyle='#4a3418'; x.lineWidth=3;
+  x.beginPath(); x.arc(0,-34,10,3.4,6.1); x.stroke();
+  x.fillStyle='#5a4020'; x.fillRect(-16,-28,32,7); x.fillRect(-18,26,36,8);
+  x.fillStyle='#ffd97a'; x.fillRect(-13,-21,26,47);
+  x.fillStyle='rgba(255,240,190,'+(.75*fl).toFixed(2)+')'; x.fillRect(-9,-17,18,39);
+  x.strokeStyle='#5a4020'; x.lineWidth=3;
+  x.beginPath(); x.moveTo(-13,-21); x.lineTo(-13,26); x.moveTo(13,-21); x.lineTo(13,26); x.stroke();
+  x.fillStyle='#ff9b2f'; x.beginPath(); x.ellipse(0,8,5,10*fl,0,0,7); x.fill();
+};
+PERS.perla=function(x,t){
+  var g=x.createRadialGradient(-8,-10,3,0,0,46);
+  g.addColorStop(0,'rgba(220,240,255,.55)'); g.addColorStop(1,'rgba(220,240,255,0)');
+  x.fillStyle=g; x.beginPath(); x.arc(0,0,46,0,7); x.fill();
+  var p=x.createRadialGradient(-9,-11,2,0,0,28);
+  p.addColorStop(0,'#ffffff'); p.addColorStop(.55,'#f0e6f2'); p.addColorStop(1,'#c9b6cf');
+  x.fillStyle=p; x.beginPath(); x.arc(0,0,26,0,7); x.fill();
+  x.fillStyle='rgba(255,255,255,'+(.5+Math.sin(t*2)*.2).toFixed(2)+')';
+  x.beginPath(); x.ellipse(-9,-11,6,4,-.6,0,7); x.fill();
+};
+PERS.cristal=function(x,t){
+  var fl=1+Math.sin(t*5)*.12;
+  var g=x.createRadialGradient(0,0,4,0,0,54*fl);
+  g.addColorStop(0,'rgba(255,150,40,.55)'); g.addColorStop(1,'rgba(255,150,40,0)');
+  x.fillStyle=g; x.beginPath(); x.arc(0,0,54*fl,0,7); x.fill();
+  x.fillStyle='#e2612a';
+  x.beginPath(); x.moveTo(0,-38); x.lineTo(18,-6); x.lineTo(8,34); x.lineTo(-12,30); x.lineTo(-19,-8); x.closePath(); x.fill();
+  x.fillStyle='#f59331';
+  x.beginPath(); x.moveTo(0,-38); x.lineTo(18,-6); x.lineTo(4,-2); x.closePath(); x.fill();
+  x.fillStyle='#ffca6a';
+  x.beginPath(); x.moveTo(0,-38); x.lineTo(4,-2); x.lineTo(-19,-8); x.closePath(); x.fill();
+};
+PERS.oglinda=function(x,t){
+  x.rotate(Math.sin(t*1.2)*.08);
+  x.fillStyle='#b07a34'; x.beginPath(); x.ellipse(0,-12,26,32,0,0,7); x.fill();
+  x.fillStyle='#8a5c22'; x.fillRect(-6,18,12,26);
+  x.fillStyle='#d9e8ef'; x.beginPath(); x.ellipse(0,-12,20,26,0,0,7); x.fill();
+  x.fillStyle='rgba(255,255,255,.75)';
+  x.beginPath(); x.moveTo(-14,2); x.lineTo(-2,-32); x.lineTo(6,-32); x.lineTo(-6,2); x.closePath(); x.fill();
+};
+PERS.scrisoare=function(x,t){
+  x.rotate(Math.sin(t*.9)*.06);
+  x.fillStyle='#f4e8cd'; x.strokeStyle='#b09461'; x.lineWidth=2.5;
+  x.beginPath(); x.rect(-36,-26,72,52); x.fill(); x.stroke();
+  x.strokeStyle='#8b6f42'; x.lineWidth=2;
+  for(var i=0;i<4;i++){ x.beginPath(); x.moveTo(-26,-14+i*12); x.lineTo(i===3?4:24,-14+i*12); x.stroke(); }
+  x.fillStyle='#b53f2c'; x.beginPath(); x.arc(24,18,9,0,7); x.fill();
+  x.fillStyle='#8e2f20'; x.beginPath(); x.arc(24,18,5,0,7); x.fill();
+};
+PERS.bilet=function(x,t){
+  x.rotate(-.14+Math.sin(t*1.1)*.05);
+  x.fillStyle='#eee2c4'; x.strokeStyle='#b09461'; x.lineWidth=2.5;
+  x.beginPath();
+  x.moveTo(-34,-24); x.lineTo(-12,-28); x.lineTo(14,-22); x.lineTo(36,-26);
+  x.lineTo(32,24); x.lineTo(8,28); x.lineTo(-16,22); x.lineTo(-32,27); x.closePath();
+  x.fill(); x.stroke();
+  x.strokeStyle='#6f5731'; x.lineWidth=2.2;
+  x.beginPath(); x.moveTo(-22,-8); x.lineTo(20,-6); x.moveTo(-22,4); x.lineTo(10,6); x.moveTo(-22,16); x.lineTo(-2,17); x.stroke();
+};
+
+/* ═══ SCENE ═══ */
+function scMare(x,t,tl,par){
+  var p=pal(par.paleta||'zi'), H0=VH*.58;
+  cerul(x,H0,p,t,par);
+  if(par.tinta) silueta(x,VW*(par.tx||.78),H0+6,110+(par.crestere?tl*3:0),74+(par.crestere?tl*2:0),par.tinta,'rgba(12,40,52,.72)',t);
+  if(par.plecare) silueta(x,VW*.14-tl*26,H0+6,150,60,'stanca','rgba(10,32,44,.55)',t);
+  marea(x,H0,p,t,par.paleta==='furtuna'?2.4:1);
+  if(par.paleta!=='furtuna') pasari(x,t,4,H0*.35);
+  corabie(x,VW*(par.cx||.42)+Math.sin(t*.4)*14,H0+58,1.05,t,par.paleta==='furtuna'?2.2:1);
+  if(par.paleta==='furtuna'){
+    x.strokeStyle='rgba(190,215,235,.35)'; x.lineWidth=1.4;
+    for(var i=0;i<90;i++){
+      var rx=(zg(i)*VW+t*260)%VW, ry=(zg(i+40)*VH+t*680)%VH;
+      x.beginPath(); x.moveTo(rx,ry); x.lineTo(rx-9,ry+26); x.stroke();
+    }
+    if(Math.sin(t*2.3)>.985||(t%7)<.09){ x.fillStyle='rgba(220,235,255,.4)'; x.fillRect(-300,-200,VW+600,VH+400); }
+  }
+}
+function scPlaja(x,t,tl,par){
+  var p=pal(par.paleta||'zi'), H0=VH*.44, pan=(par.mers?tl*46:0);
+  cerul(x,H0,p,t,par);
+  marea(x,H0,p,t,.7);
+  var yN=VH*.60;
+  x.fillStyle=par.paleta==='apus'?'#c99a5e':'#e8d3a0';
+  x.beginPath(); x.moveTo(-300,yN+12);
+  for(var i=-300;i<=VW+300;i+=20) x.lineTo(i,yN+Math.sin(i*.01+1)*7);
+  x.lineTo(VW+300,VH+200); x.lineTo(-300,VH+200); x.closePath(); x.fill();
+  x.fillStyle='rgba(255,255,255,.22)';
+  x.beginPath(); x.moveTo(-300,yN+6);
+  for(var i2=-300;i2<=VW+300;i2+=16) x.lineTo(i2,yN+Math.sin(i2*.02+t*1.6)*6);
+  x.lineTo(VW+300,yN+22); x.lineTo(-300,yN+22); x.closePath(); x.fill();
+  x.fillStyle=par.paleta==='apus'?'#b98a52':'#d9c08a';
+  for(var s=0;s<26;s++){
+    var sx=((zg(s)*VW*1.4)-pan*1.35)%(VW+120); if(sx<-60) sx+=VW+120;
+    x.beginPath(); x.ellipse(sx,yN+40+zg(s+9)*VH*.28,7+zg(s+2)*7,3,0,0,7); x.fill();
+  }
+  [{d:.35,c:'#123f2c',h:150},{d:.75,c:'#19583a',h:210},{d:1.5,c:'#1f6e46',h:290}].forEach(function(L,li){
+    for(var k=0;k<6;k++){
+      var bx=((zg(k+li*11)*1.35*VW)-pan*L.d)%(VW+300); if(bx<-150) bx+=VW+300;
+      var by=yN+18+li*26, h=L.h*(.8+zg(k+li*5)*.4);
+      x.strokeStyle=L.c; x.lineWidth=7+li*3; x.lineCap='round';
+      x.beginPath(); x.moveTo(bx,by); x.quadraticCurveTo(bx+14,by-h*.6,bx+30,by-h); x.stroke();
+      var tx0=bx+30, ty0=by-h, Ln=68+li*20, wd=14+li*5;
+      x.fillStyle=L.c;
+      for(var f=0;f<7;f++){
+        var a=-3.02+f*.5+Math.sin(t*1.1+k+f)*.06, lx=Math.cos(a), ly=Math.sin(a);
+        x.beginPath(); x.moveTo(tx0,ty0);
+        x.quadraticCurveTo(tx0+lx*Ln*.5-ly*wd,ty0+ly*Ln*.5+lx*wd,tx0+lx*Ln,ty0+ly*Ln+Ln*.3);
+        x.quadraticCurveTo(tx0+lx*Ln*.5+ly*wd,ty0+ly*Ln*.5-lx*wd,tx0,ty0); x.fill();
+      }
+      x.fillStyle='#7a5426';
+      x.beginPath(); x.arc(tx0-5,ty0+8,4.5+li,0,7); x.arc(tx0+7,ty0+10,4.5+li,0,7); x.fill();
+    }
+  });
+  x.lineCap='butt';
+  pasari(x,t,3,H0*.3);
+}
+function scPestera(x,t,tl,par){
+  x.fillStyle='#0a1119'; x.fillRect(-300,-200,VW+600,VH+400);
+  if(!par.inauntru){
+    cerul(x,VH*.5,pal('noapte'),t,{stele:1});
+    x.fillStyle='#0d151d';
+    x.beginPath(); x.moveTo(-300,VH+200); x.lineTo(-300,VH*.30);
+    for(var i=-300;i<=VW+300;i+=40) x.lineTo(i,VH*(.30+zg(i)*.16));
+    x.lineTo(VW+300,VH+200); x.closePath(); x.fill();
+  }
+  x.fillStyle='#04080d'; x.beginPath();
+  x.moveTo(VW*.24,VH+200); x.quadraticCurveTo(VW*.27,VH*.16,VW*.5,VH*.13);
+  x.quadraticCurveTo(VW*.73,VH*.16,VW*.76,VH+200); x.closePath(); x.fill();
+  var gl=x.createRadialGradient(VW*.5,VH*.66,10,VW*.5,VH*.66,330);
+  gl.addColorStop(0,'rgba(240,180,80,.30)'); gl.addColorStop(1,'rgba(240,180,80,0)');
+  x.fillStyle=gl; x.fillRect(-300,-200,VW+600,VH+400);
+  [[VW*.33,VH*.5],[VW*.67,VH*.5]].forEach(function(T,i){
+    x.fillStyle='#3a2614'; x.fillRect(T[0]-3,T[1],6,54);
+    var fh=26+Math.sin(t*7+i*2)*7;
+    var fg=x.createRadialGradient(T[0],T[1]-fh*.4,2,T[0],T[1]-fh*.4,fh*2.4);
+    fg.addColorStop(0,'rgba(255,226,150,.95)'); fg.addColorStop(.4,'rgba(233,140,40,.55)'); fg.addColorStop(1,'rgba(233,140,40,0)');
+    x.fillStyle=fg; x.beginPath(); x.arc(T[0],T[1]-fh*.4,fh*2.4,0,7); x.fill();
+    x.fillStyle='#ffd074'; x.beginPath();
+    x.moveTo(T[0]-8,T[1]); x.quadraticCurveTo(T[0]+Math.sin(t*9+i)*5,T[1]-fh,T[0]+8,T[1]); x.closePath(); x.fill();
+  });
+  for(var s=0;s<7;s++){
+    var sx=VW*(.3+s*.07), sh=40+zg(s)*70;
+    x.fillStyle='#0b1018';
+    x.beginPath(); x.moveTo(sx-11,VH*.13); x.lineTo(sx,VH*.13+sh); x.lineTo(sx+11,VH*.13); x.closePath(); x.fill();
+  }
+  for(var d=0;d<14;d++){
+    var dx=VW*(.3+zg(d)*.4), dy=((t*90+zg(d+5)*VH)%(VH*.7))+VH*.16;
+    x.fillStyle='rgba(160,200,225,.4)'; x.fillRect(dx,dy,1.6,7);
+  }
+}
+function scJungla(x,t,tl,par){
+  var pan=tl*(par.mers===false?6:52);
+  var g=x.createLinearGradient(0,0,0,VH);
+  g.addColorStop(0,'#8fbf6a'); g.addColorStop(.42,'#3d7a3f'); g.addColorStop(1,'#12331c');
+  x.fillStyle=g; x.fillRect(-300,-200,VW+600,VH+400);
+  for(var r=0;r<5;r++){
+    x.fillStyle='rgba(255,244,190,.07)';
+    var bx=VW*(.1+r*.2)-pan*.1;
+    x.beginPath(); x.moveTo(bx,-200); x.lineTo(bx+70,-200); x.lineTo(bx+180,VH+200); x.lineTo(bx+40,VH+200); x.closePath(); x.fill();
+  }
+  [{d:.3,c:'#1b4a2b',s:64,n:9},{d:.7,c:'#22633a',s:96,n:8},{d:1.4,c:'#123a22',s:150,n:7}].forEach(function(L,li){
+    for(var k=0;k<L.n;k++){
+      var fx=((zg(k+li*13)*1.4*VW)-pan*L.d)%(VW+400); if(fx<-200) fx+=VW+400;
+      var fy=VH*(zg(k+li*7)*.9), rot=zg(k+li*3)*6.28+Math.sin(t*.7+k)*.06;
+      x.save(); x.translate(fx,fy); x.rotate(rot); x.fillStyle=L.c;
+      for(var lobe=0;lobe<7;lobe++){
+        x.save(); x.rotate(-1.1+lobe*.36);
+        x.beginPath(); x.ellipse(0,-L.s*.55,L.s*.14,L.s*.55,0,0,7); x.fill();
+        x.restore();
+      }
+      x.restore();
+    }
+  });
+  x.fillStyle='rgba(200,225,255,.06)';
+  for(var m=0;m<4;m++){ x.beginPath(); x.ellipse(((t*20+m*300)%(VW+400))-200,VH*(.55+m*.1),260,40,0,0,7); x.fill(); }
+}
+function scRecif(x,t,tl,par){
+  var p=pal(par.paleta||'zi'), H0=VH*.26;
+  cerul(x,H0,p,t,par);
+  var g=x.createLinearGradient(0,H0,0,VH);
+  g.addColorStop(0,par.paleta==='apus'?'#4a7f9e':'#48b7c4');
+  g.addColorStop(.45,par.paleta==='apus'?'#2a5a78':'#1d8ba4');
+  g.addColorStop(1,'#0b4b63');
+  x.fillStyle=g; x.fillRect(-300,H0,VW+600,VH-H0+200);
+  for(var b=0;b<6;b++){
+    x.strokeStyle='rgba(255,255,255,'+(.06+b*.03).toFixed(2)+')'; x.lineWidth=2; x.beginPath();
+    for(var i=-100;i<=VW+100;i+=16){
+      var yy=H0+8+b*9+Math.sin(i*.014+t*(.6+b*.3))*(3+b*1.6);
+      i===-100?x.moveTo(i,yy):x.lineTo(i,yy);
+    }
+    x.stroke();
+  }
+  ['#e0648f','#e89b52','#7f5fc0','#3fa88a'].forEach(function(c,ci){
+    for(var k=0;k<4;k++){
+      var cx=VW*(.06+ci*.24+zg(k+ci*5)*.14), cy=VH*(.86+zg(k)*.1);
+      x.strokeStyle=c; x.lineWidth=8; x.lineCap='round';
+      for(var br=0;br<4;br++){
+        var a=-2.3+br*.5;
+        x.beginPath(); x.moveTo(cx,cy);
+        x.quadraticCurveTo(cx+Math.cos(a)*20,cy+Math.sin(a)*30,cx+Math.cos(a)*34+Math.sin(t*1.3+br)*4,cy+Math.sin(a)*58);
+        x.stroke();
+      }
+    }
+  });
+  x.lineCap='butt';
+  x.fillStyle='#3d4a52';
+  x.beginPath(); x.moveTo(VW*.52,VH*.74); x.lineTo(VW*.58,VH*.44); x.lineTo(VW*.74,VH*.47); x.lineTo(VW*.80,VH*.74); x.closePath(); x.fill();
+  for(var f=0;f<9;f++){
+    var fx=((t*(28+f*11)+zg(f)*VW)%(VW+120))-60, fy=VH*(.5+zg(f+4)*.42)+Math.sin(t*2+f)*9, fs=9+zg(f+2)*8;
+    x.fillStyle=['#ffd166','#ef7d57','#8be0e8'][f%3];
+    x.beginPath(); x.ellipse(fx,fy,fs,fs*.6,0,0,7); x.fill();
+    x.beginPath(); x.moveTo(fx-fs,fy); x.lineTo(fx-fs*1.7,fy-fs*.5); x.lineTo(fx-fs*1.7,fy+fs*.5); x.closePath(); x.fill();
+  }
+  for(var bu=0;bu<22;bu++){
+    var ux=zg(bu)*VW, uy=VH-((t*60+zg(bu+7)*VH)%(VH-H0));
+    x.fillStyle='rgba(255,255,255,.28)'; x.beginPath(); x.arc(ux,uy,2+zg(bu+3)*3,0,7); x.fill();
+  }
+}
+function scVulcan(x,t,tl,par){
+  var g=x.createLinearGradient(0,0,0,VH);
+  g.addColorStop(0,'#1a1020'); g.addColorStop(.5,'#4a2320'); g.addColorStop(1,'#7a3418');
+  x.fillStyle=g; x.fillRect(-300,-200,VW+600,VH+400);
+  var gl=x.createRadialGradient(VW*.5,VH*.34,20,VW*.5,VH*.34,420);
+  gl.addColorStop(0,'rgba(255,140,40,.45)'); gl.addColorStop(1,'rgba(255,140,40,0)');
+  x.fillStyle=gl; x.fillRect(-300,-200,VW+600,VH+400);
+  silueta(x,VW*.5,VH*.80,300,300,'vulcan','#20161c',t);
+  x.fillStyle='#150e14';
+  x.beginPath(); x.moveTo(-300,VH*.80);
+  for(var i=-300;i<=VW+300;i+=30) x.lineTo(i,VH*.80+Math.sin(i*.02)*10);
+  x.lineTo(VW+300,VH+200); x.lineTo(-300,VH+200); x.closePath(); x.fill();
+  for(var c=0;c<9;c++){
+    var cx=VW*(.06+c*.11);
+    x.strokeStyle='rgba(255,120,40,'+(.25+Math.abs(Math.sin(t*1.4+c))*.5).toFixed(2)+')';
+    x.lineWidth=3; x.beginPath(); x.moveTo(cx,VH*.84); x.quadraticCurveTo(cx+22,VH*.9,cx+8,VH); x.stroke();
+  }
+  for(var a2=0;a2<60;a2++){
+    var ax=(zg(a2)*VW+Math.sin(t*.6+a2)*40)%VW, ay=((t*36+zg(a2+9)*VH)%VH);
+    x.fillStyle='rgba(220,205,195,'+(.2+zg(a2+2)*.4).toFixed(2)+')';
+    x.beginPath(); x.arc(ax,ay,1.4+zg(a2+5)*2.2,0,7); x.fill();
+  }
+  for(var e=0;e<16;e++){
+    var ex=VW*.5+Math.sin(t*1.6+e)*90, ey=VH*.5-((t*90+zg(e)*400)%420);
+    x.fillStyle='rgba(255,180,60,'+clamp(.6-Math.abs(ey/VH-.2),0,1).toFixed(2)+')';
+    x.beginPath(); x.arc(ex,ey,2.4,0,7); x.fill();
+  }
+}
+function scCraniu(x,t,tl,par){
+  var p=pal(par.paleta||'apus'), H0=VH*.52;
+  cerul(x,H0,p,t,par);
+  marea(x,H0,p,t,.8);
+  silueta(x,VW*.5,H0+8,230,150,'craniu','rgba(16,22,30,.85)',t);
+  x.fillStyle=p===PAL.apus?'#8f6b45':'#c7ac7d';
+  x.beginPath(); x.moveTo(-300,VH*.74);
+  for(var i=-300;i<=VW+300;i+=22) x.lineTo(i,VH*.74+Math.sin(i*.013+2)*8);
+  x.lineTo(VW+300,VH+200); x.lineTo(-300,VH+200); x.closePath(); x.fill();
+  if(par.cufar){
+    var cx=VW*.5, cy=VH*.88;
+    x.fillStyle='rgba(0,0,0,.25)'; x.beginPath(); x.ellipse(cx,cy+22,86,12,0,0,7); x.fill();
+    x.fillStyle='#4a2f16'; x.fillRect(cx-70,cy-34,140,54);
+    x.fillStyle='#5e3d1e'; x.beginPath(); x.ellipse(cx,cy-34,70,26,0,Math.PI,0); x.fill();
+    x.fillStyle='#dfa235'; x.fillRect(cx-8,cy-30,16,32); x.fillRect(cx-72,cy-14,144,7);
+  }
+  for(var f=0;f<5;f++){
+    var fy=VH*(.36+f*.1), fx=((t*(9+f*5))%(VW+700))-350;
+    x.fillStyle='rgba(215,228,235,'+(.10+f*.025).toFixed(2)+')';
+    x.beginPath(); x.ellipse(fx,fy,340,26,0,0,7); x.fill();
+    x.beginPath(); x.ellipse(fx-500,fy+14,300,20,0,0,7); x.fill();
+  }
+}
+function scHarta(x,t,tl,par){
+  var g=x.createRadialGradient(VW*.5,VH*.4,40,VW*.5,VH*.5,VW*.7);
+  g.addColorStop(0,'#f6ead0'); g.addColorStop(1,'#c9ab77');
+  x.fillStyle=g; x.fillRect(-300,-200,VW+600,VH+400);
+  x.strokeStyle='rgba(120,90,50,.16)'; x.lineWidth=1;
+  for(var k=0;k<16;k++){
+    var a=k*Math.PI/8;
+    x.beginPath(); x.moveTo(VW*.5,VH*.5); x.lineTo(VW*.5+Math.cos(a)*700,VH*.5+Math.sin(a)*700); x.stroke();
+  }
+  var u=ease(clamp(tl/6,0,1));
+  var dela=[[-.5,-.4],[1.5,-.35],[-.45,1.4],[1.45,1.35],[.5,-1.1]];
+  var la=[[.32,.3],[.68,.3],[.32,.66],[.68,.66],[.5,.48]];
+  for(var i=0;i<5;i++){
+    var px=lerp(dela[i][0],la[i][0],u)*VW, py=lerp(dela[i][1],la[i][1],u)*VH;
+    x.save(); x.translate(px,py); x.rotate(lerp(zg(i)*3-1.5,0,u)); x.scale(1.9,1.9);
+    PERS.harta(x,0);
+    x.restore();
+  }
+  if(tl>6){
+    var b=clamp((tl-6)/2,0,1);
+    x.fillStyle='rgba(255,240,200,'+(b*.5*Math.abs(Math.sin(tl*3))).toFixed(2)+')';
+    x.fillRect(-300,-200,VW+600,VH+400);
+  }
+}
+function scApus(x,t,tl,par){
+  var p=PAL.apus, H0=VH*.56;
+  cerul(x,H0,p,t,par);
+  marea(x,H0,p,t,.6);
+  pasari(x,t,5,H0*.34);
+  x.save(); x.globalAlpha=.85; corabie(x,VW*(.62+tl*.006),H0+40,.75,t,.6); x.restore();
+  x.fillStyle='rgba(12,8,20,.5)';
+  x.beginPath(); x.moveTo(-300,VH+200); x.lineTo(-300,VH*.86);
+  for(var i=-300;i<=VW+300;i+=30) x.lineTo(i,VH*.86+Math.sin(i*.008)*14);
+  x.lineTo(VW+300,VH+200); x.closePath(); x.fill();
+}
+var SCENE={mare:scMare,plaja:scPlaja,pestera:scPestera,jungla:scJungla,recif:scRecif,vulcan:scVulcan,craniu:scCraniu,harta:scHarta,apus:scApus};
+
+/* ——— actori ——— */
+function deseneazaActori(x,p,t){
+  (p.actori||[]).forEach(function(a){
+    var t0=a.t0, t1=a.t1===undefined?a.t0+1:a.t1, pana=a.pana===undefined?p.dur:a.pana;
+    if(t<t0||t>pana) return;
+    var u=t1>t0?ease((t-t0)/(t1-t0)):1;
+    var fx=(a.from?a.from[0]:a.to[0]), fy=(a.from?a.from[1]:a.to[1]);
+    var px=lerp(fx,a.to[0],u)*VW;
+    var py=lerp(fy,a.to[1],u)*VH-(a.arc||0)*Math.sin(Math.PI*u)*VH;
+    if(u>=1&&a.bob!==false) py+=Math.sin(t*2.2)*5;
+    var al=clamp((t-t0)/.4,0,1)*clamp((pana-t)/.5,0,1);
+    var s=a.s||64, fn=a.p&&PERS[a.p];
+    x.save(); x.globalAlpha=al;
+    if(a.sol){
+      x.fillStyle='rgba(0,0,0,.22)';
+      x.beginPath(); x.ellipse(px,py+s*.5,s*.42,s*.1,0,0,7); x.fill();
+    }
+    x.translate(px,py);
+    if(a.flip) x.scale(-1,1);
+    if(u<1&&a.inclina) x.rotate(Math.sin(t*9)*.14);
+    if(fn){ x.scale(s/100,s/100); fn(x,t,u<1); }
+    else {
+      x.font=s+'px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+      x.textAlign='center'; x.textBaseline='middle';
+      x.shadowColor='rgba(0,0,0,.5)'; x.shadowBlur=12; x.shadowOffsetY=4;
+      x.fillText(a.e||'?',0,0);
+    }
+    x.restore();
+  });
+}
+function cadruLa(p,t){
+  var c=p.cadre, ac=0;
+  for(var i=0;i<c.length;i++){ if(t<c[i].pana){ ac=i; break; } ac=i; }
+  return {c:c[ac],start:ac===0?0:c[ac-1].pana,idx:ac};
+}
+function deseneazaFilm(cv,p,t){
+  var dpr=Math.min(2,window.devicePixelRatio||1);
+  var w=Math.max(80,cv.clientWidth||640), h=Math.max(60,cv.clientHeight||360);
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  }
+  var x=cv.getContext('2d'), W=cv.width, H=cv.height;
+  var k=Math.max(W/VW,H/VH);
+  x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,W,H);
+  x.setTransform(k,0,0,k,(W-VW*k)/2,(H-VH*k)/2);
+  var cad=cadruLa(p,t);
+  (SCENE[cad.c.scena]||scMare)(x,t,t-cad.start,cad.c.par||{});
+  deseneazaActori(x,p,t);
+  var tc=t-cad.start;
+  if(tc<.5){ x.fillStyle='rgba(0,0,0,'+(1-tc/.5).toFixed(2)+')'; x.fillRect(-300,-200,VW+600,VH+400); }
+  if(t>p.dur-.6){ x.fillStyle='rgba(0,0,0,'+clamp((t-(p.dur-.6))/.6,0,1).toFixed(2)+')'; x.fillRect(-300,-200,VW+600,VH+400); }
+  var v=x.createRadialGradient(VW*.5,VH*.5,VH*.4,VW*.5,VH*.5,VW*.78);
+  v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.5)');
+  x.fillStyle=v; x.fillRect(-300,-200,VW+600,VH+400);
+  for(var gr=0;gr<22;gr++){
+    x.fillStyle='rgba(255,255,255,'+(Math.random()*.028).toFixed(3)+')';
+    x.fillRect(Math.random()*VW,Math.random()*VH,2,2);
+  }
+}
+/* ——— ambianță ——— */
+var AMBCFG={mare:[520,.045],plaja:[600,.035],pestera:[240,.03],jungla:[880,.028],recif:[420,.035],vulcan:[190,.045],craniu:[300,.03],harta:[0,0],apus:[430,.032]};
+function ambianta(tip){
+  opresteAmb();
+  if(!S.sunet||!AMBCFG[tip]||!AMBCFG[tip][0]) return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    var len=Math.floor(AC.sampleRate*2), b=AC.createBuffer(1,len,AC.sampleRate), d=b.getChannelData(0);
+    for(var i=0;i<len;i++) d[i]=(Math.random()*2-1)*.6;
+    var src=AC.createBufferSource(); src.buffer=b; src.loop=true;
+    var f=AC.createBiquadFilter(); f.type='lowpass'; f.frequency.value=AMBCFG[tip][0]; f.Q.value=.8;
+    var g=AC.createGain(); g.gain.value=0;
+    src.connect(f); f.connect(g); g.connect(AC.destination); src.start();
+    g.gain.linearRampToValueAtTime(AMBCFG[tip][1],AC.currentTime+1.4);
+    var lfo=AC.createOscillator(), lg=AC.createGain();
+    lfo.frequency.value=.14; lg.gain.value=AMBCFG[tip][0]*.5;
+    lfo.connect(lg); lg.connect(f.frequency); lfo.start();
+    AMB={src:src,g:g,lfo:lfo};
+  }catch(e){}
+}
+function opresteAmb(){
+  if(!AMB) return;
+  var a=AMB; AMB=null;
+  try{ a.g.gain.linearRampToValueAtTime(.0001,AC.currentTime+.5);
+    setTimeout(function(){ try{ a.src.stop(); a.lfo.stop(); }catch(e){} },700); }catch(e){}
+}
+
+/* ——— pacing: filmul se întinde cât are naratoarea de citit ——— */
+function paceazaFilm(p){
+  if(!S.voce||!p.replici||!p.replici.length) return p;
+  var RATA=2.7, k;
+  var vechi=p.replici.map(function(r){ return r.t; });
+  var noi=[], t=vechi[0]||0;
+  for(var i=0;i<p.replici.length;i++){
+    noi.push(t);
+    var nevoie=Math.max(1.2,p.replici[i].x.split(/\s+/).length/RATA+.45);
+    var gol=(i+1<vechi.length)?vechi[i+1]-vechi[i]:(p.dur-vechi[i]);
+    t+=Math.max(gol,nevoie);
+  }
+  var durNou=Math.max(p.dur,t+1.2);
+  var xs=[0].concat(vechi,[p.dur]), ys=[0].concat(noi,[durNou]);
+  function m(v){
+    for(var j=0;j<xs.length-1;j++){
+      if(v<=xs[j+1]){ var d=xs[j+1]-xs[j]; return d<=0?ys[j]:ys[j]+(ys[j+1]-ys[j])*((v-xs[j])/d); }
+    }
+    return ys[ys.length-1];
+  }
+  function r1(v){ return Math.round(v*10)/10; }
+  var q={}; for(k in p) q[k]=p[k];
+  q.dur=r1(durNou);
+  q.replici=p.replici.map(function(r,i){ var c={},k2; for(k2 in r) c[k2]=r[k2]; c.t=r1(noi[i]); return c; });
+  q.cadre=p.cadre.map(function(c,i){ var d={},k3; for(k3 in c) d[k3]=c[k3];
+    d.pana=(i===p.cadre.length-1)?q.dur:r1(m(c.pana)); return d; });
+  q.actori=(p.actori||[]).map(function(a){ var b={},k4; for(k4 in a) b[k4]=a[k4];
+    b.t0=r1(m(a.t0));
+    if(a.t1!==undefined) b.t1=r1(m(a.t1));
+    if(a.pana!==undefined) b.pana=r1(m(a.pana));
+    return b; });
+  return q;
+}
+
+/* ——— ecranul de film ——— */
+function redus(){ try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+function ecranFilm(p,cap){
+  var corp='<div class="film">'+
+      '<canvas id="peliculaC" aria-label="Secvență animată din poveste"></canvas>'+
+      '<div class="bara-f" id="baraF"></div>'+
+      '<button class="sari" onclick="sariFilm()">Sari peste ⏭</button>'+
+      '<div class="subt" id="subtF"></div>'+
+    '</div>';
+  var pod='<span id="filmCmd" class="actiuni"><span class="mica">🎬 Secvența rulează — '+p.dur+' secunde</span></span>';
+  return foaie(cap,corp,pod,'plin');
+}
+function pornesteFilm(){
+  var p=A.pas; if(!p||p.t!=='film') return;
+  if(!document.getElementById('peliculaC')) return;
+  if(A.t0===undefined) A.t0=performance.now();
+  if(A.ambPornit!==true){ A.ambPornit=true; ambianta(p.cadre[0].scena); }
+  if(redus()){ deseneazaFilm(document.getElementById('peliculaC'),p,p.dur*.55); terminaFilm(true); return; }
+  var g=++FGEN; A.fg=g; A.subtI=null; A.cadruAnt=-1;
+  (function buc(){
+    if(A.fg!==g) return;
+    var cv=document.getElementById('peliculaC'); if(!cv) return;
+    var t=(performance.now()-A.t0)/1000;
+    if(t>=p.dur){ terminaFilm(); return; }
+    deseneazaFilm(cv,p,t);
+    var cad=cadruLa(p,t);
+    if(cad.idx!==A.cadruAnt){ A.cadruAnt=cad.idx; if(cad.idx>0){ ambianta(cad.c.scena); ton(300,.12,'sine',.03); } }
+    subtitrare(t);
+    requestAnimationFrame(buc);
+  })();
+}
+function subtitrare(t){
+  var p=A.pas, cur=null, el=document.getElementById('subtF');
+  if(!el) return;
+  for(var i=0;i<p.replici.length;i++) if(p.replici[i].t<=t) cur=p.replici[i];
+  var b=document.getElementById('baraF'); if(b) b.style.width=clamp(t/p.dur*100,0,100)+'%';
+  if(A.subtI===cur) return;
+  A.subtI=cur;
+  el.className='subt';
+  el.innerHTML=cur?((cur.cine?'<div class="cine2">'+E(cur.cine.n)+'</div>':'')+'<p>'+E(cur.x)+'</p>'):'';
+  el.style.animation='none'; void el.offsetWidth; el.style.animation='intra .45s ease-out';
+  if(cur) spune(cur.x);
+}
+function terminaFilm(totul){
+  A.fg=-1; A.filmGata=true; opresteAmb();
+  var cv=document.getElementById('peliculaC');
+  if(cv) deseneazaFilm(cv,A.pas,A.pas.dur-.7);
+  var b=document.getElementById('baraF'); if(b) b.style.width='100%';
+  if(!totul){ A.subtI=null; subtitrare(A.pas.dur); }
+  var el=document.getElementById('subtF');
+  if(el&&totul){
+    el.className='subt multi';
+    el.innerHTML=A.pas.replici.map(function(r){
+      return (r.cine?'<div class="cine2">'+E(r.cine.n)+'</div>':'')+'<p>'+E(r.x)+'</p>';
+    }).join('');
+  }
+  var c=document.getElementById('filmCmd');
+  if(c) c.innerHTML='<button class="buton" onclick="inainte()">Mai departe ⚓</button>'+
+    '<button class="buton linistit" onclick="revezi()">🔁 Revezi</button>'+
+    '<button class="buton linistit" onclick="citesteFilm()" title="Citește textul">🔊</button>';
+}
+function citesteFilm(){ spune(A.pas.replici.map(function(r){ return r.x; }).join(' ')); }
+function sariFilm(){
+  if(A.filmGata){ inainte(); return; }
+  A.fg=-1; taci(); opresteAmb();
+  terminaFilm(true);
+}
+function revezi(){
+  A.t0=performance.now(); A.filmGata=false; A.ambPornit=false;
+  var c=document.getElementById('filmCmd');
+  if(c) c.innerHTML='<span class="mica">🎬 Secvența rulează...</span>';
+  pornesteFilm();
+}
+
+/* ═══════════ PORNIRE ═══════════ */
+S=stareNoua();
+try{
+  if(window.speechSynthesis){
+    incarcaVoci();
+    speechSynthesis.onvoiceschanged=function(){ incarcaVoci(); };
+  }
+}catch(e){}
+deseneazaMarea();
+addEventListener('resize',function(){
+  deseneazaMarea();
+  if(S.ecran==='joc'&&A.pas&&A.pas.t==='film'){
+    var cv=document.getElementById('peliculaC');
+    if(cv) deseneazaFilm(cv,A.pas,A.filmGata?A.pas.dur-.7:(performance.now()-A.t0)/1000);
+  }
+});
+render();
+</script>
