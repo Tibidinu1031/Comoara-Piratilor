@@ -310,10 +310,6 @@ input.text:focus{outline:none;border-color:var(--alama-2)}
 .stat div{padding:9px;border-radius:9px;background:#f7edd6;border:1px solid var(--umbra);text-align:center}
 .stat b{display:block;font-family:var(--display);font-size:clamp(1.15rem,3vh,1.6rem);line-height:1.05;color:var(--alama-2);font-variant-numeric:tabular-nums}
 .stat span{font-size:.74rem;color:var(--cerneala-2)}
-.lista-voci{display:grid;gap:6px}
-.voce-op{display:flex;gap:9px;align-items:center;text-align:left;padding:9px 12px;border-radius:9px;background:#fffaf0;border:2px solid var(--umbra);font-weight:600;font-size:.9rem}
-.voce-op.ales{background:#f6dfae;border-color:var(--alama-2)}
-.voce-op small{display:block;font-family:var(--log);font-size:.72rem;color:var(--cerneala-2)}
 .conf{position:fixed;top:-14px;width:10px;height:14px;z-index:30;pointer-events:none;border-radius:2px}
 @keyframes cade{to{transform:translateY(104vh) rotate(720deg);opacity:.15}}
 .scut{animation:scutura .32s}
@@ -325,6 +321,7 @@ input.text:focus{outline:none;border-color:var(--alama-2)}
 <main id="app"></main>
 <div id="voal"></div>
 
+<script src="audio/manifest.js"></script>
 <script>
 /* ═══════════ PERSONAJE ═══════════ */
 var COCO={n:'Coco, papagalul',e:'🦜'};
@@ -776,38 +773,151 @@ function sNu(){ ton(180,.25,'square',.05); }
 function sClic(){ ton(540,.05,'triangle',.035); }
 function sPremiu(){ [523,659,784,1047].forEach(function(f,i){ setTimeout(function(){ton(f,.28);},i*130); }); }
 
-/* ═══════════ NARATOAREA ═══════════ */
-var VOCI=[],VOCE=null;
-var FEM=/alina|ioana|andreea|elena|maria|carmen|ana|daniela|female|femin|zira|natural.*femal/i;
-function incarcaVoci(){
-  try{
-    VOCI=(window.speechSynthesis&&speechSynthesis.getVoices())||[];
-  }catch(e){ VOCI=[]; }
-  if(!VOCI.length) return;
-  if(S&&S.vociNume){
-    for(var i=0;i<VOCI.length;i++) if(VOCI[i].name===S.vociNume){ VOCE=VOCI[i]; return; }
-  }
-  var ro=VOCI.filter(function(v){ return /^ro/i.test(v.lang); });
-  var fem=ro.filter(function(v){ return FEM.test(v.name); });
-  VOCE=fem[0]||ro[0]||null;
+/* ═══════════ NARATOAREA ═══════════
+   Povestea e citită din fișiere audio generate dinainte cu o voce neurală
+   românească (audio/<amprentă>.mp3, vezi tools/genereaza-audio.mjs). Fiecare
+   text se curăță, primește o amprentă și se caută în audio/manifest.js.
+   Dacă lipsește fișierul sau manifestul, cădem pe sinteza vocală a browserului. */
+
+/* NAR-COMMON-START — bloc rulat identic și de tools/genereaza-audio.mjs */
+var NAR_FIXE={
+  ok:'Corect! Bravo, matelotule.',
+  okSocotit:'Exact! Ai socotit bine.',
+  nu:'Nu e bine. Mai încearcă o dată.',
+  nuRaspuns:'Nu e răspunsul bun.',
+  corect:'Uite răspunsul corect, ca să vezi cum se face.',
+  indiciu:'Indiciu:',
+  hartaDa:'Ai găsit locul exact! Sapi și dai de ceva tare!',
+  hartaNu:'Aici nu e nimic. Numără din nou pașii, unul câte unul.',
+  codDa:'Lacătul se deschide cu un pocnet!',
+  codNu:'Codul acesta nu deschide lacătul.',
+  memNu:'Ups, nu era ăsta. Ascultă șirul încă o dată.',
+  memDa:'Ai repetat tot șirul, fără nicio greșeală!',
+  ordNu:'Scoica aceasta nu e cea mai mică dintre cele rămase. O luăm de la capăt, calm.',
+  ordDa:'Toate scoicile sunt la locul lor, de la mică la mare!',
+  proba:'Bună! Eu sunt naratoarea. Îți voi citi povestea comorii.'
+};
+function textPrimit(n){ return 'Ai primit '+n+'.'; }
+/* cheile din datele poveștii care se citesc cu voce tare ('x' doar în replici) */
+var NAR_CHEI={q:1,hint:1,invat:1,fb:1,text:1};
+function texteDin(o,spus,parinte,acc){
+  acc=acc||[];
+  if(o==null) return acc;
+  if(typeof o==='string'){ if(spus) acc.push(o); return acc; }
+  if(Array.isArray(o)){ for(var i=0;i<o.length;i++) texteDin(o[i],spus,parinte,acc); return acc; }
+  if(typeof o==='object') for(var k in o) texteDin(o[k],!!NAR_CHEI[k]||(k==='x'&&parinte==='replici'),k,acc);
+  return acc;
 }
-function vociRo(){ return VOCI.filter(function(v){ return /^ro/i.test(v.lang); }); }
+/* textul așa cum ajunge la voce: fără ghilimele/emoji, cu semnele de calcul
+   citite în cuvinte și cu MAJUSCULELE de accent coborâte (altfel se silabisesc) */
 function curataText(t){
-  return String(t).replace(/[«»]/g,'').replace(/^—\s*/,'').replace(/\s—\s/g,', ').replace(/\.\.\./g,'.');
+  return String(t)
+    .replace(/[«»„”“"]/g,'')
+    .replace(/^\s*—\s*/,'')
+    .replace(/\s—\s/g,', ')
+    .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu,'')
+    .replace(/\s*×\s*/g,' ori ')
+    .replace(/\s=\s/g,' este ')
+    .replace(/(\d)\s*\+\s*(\d)/g,'$1 plus $2')
+    .replace(/(\d)\s*[−-]\s*(\d)/g,'$1 minus $2')
+    .replace(/(\d)\s+:\s+(\d)/g,'$1 împărțit la $2')
+    .replace(/(^|[^\p{L}])(\p{Lu}{2,})(?!\p{L})/gu,function(m,a,b){ return a+b.toLowerCase(); })
+    .replace(/([.!?:;,])\s*,\s/g,'$1 ')
+    .replace(/\s+([,.;:!?])/g,'$1')
+    .replace(/\s+/g,' ').trim();
 }
-function spune(text,dupa){
-  taci();
-  if(!S||!S.voce||!text) return;
+function amprenta(s){
+  var h=0x811c9dc5;
+  for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0; }
+  return ('0000000'+h.toString(16)).slice(-8);
+}
+/* NAR-COMMON-END */
+
+var NAR_DIR='audio/', NAR=null, NAR_GEN=0, NAR_PRE=[], NAR_DESCHIS=false;
+var NAR_MUT='data:audio/wav;base64,UklGRsQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YaAAAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+var VOCI=[],VOCE=null;
+function manifest(){ return (typeof NAR_MANIFEST==='object'&&NAR_MANIFEST)||null; }
+/* primește text deja curățat; întoarce calea fișierului sau '' */
+function fisierAudio(c){ var m=manifest(); if(!m) return ''; var h=amprenta(c); return m[h]!==undefined?NAR_DIR+h+'.mp3':''; }
+/* durata reală a înregistrării, în secunde (0 dacă nu există) */
+function durataAudio(t){ var m=manifest(); if(!m) return 0; var d=m[amprenta(curataText(t))]; return typeof d==='number'?d:0; }
+function segmente(t){
+  var l=Array.isArray(t)?t:[t], r=[];
+  for(var i=0;i<l.length;i++){ if(l[i]==null) continue; var c=curataText(l[i]); if(c) r.push(c); }
+  return r;
+}
+function elementNar(){ if(!NAR){ NAR=new Audio(); NAR.preload='auto'; } return NAR; }
+/* browserele cer un gest al utilizatorului înainte de prima redare:
+   la primul clic/tastă pornim un sunet mut pe același element, ca să-l deblocăm */
+function deschideNar(){
+  if(NAR_DESCHIS) return;
   try{
-    if(!window.speechSynthesis) return;
-    var u=new SpeechSynthesisUtterance(curataText(text));
-    if(VOCE){ u.voice=VOCE; u.lang=VOCE.lang; } else { u.lang='ro-RO'; }
-    u.rate=.94; u.pitch=VOCE&&FEM.test(VOCE.name)?1.02:1.22; u.volume=1;
-    if(dupa) u.onend=dupa;
-    speechSynthesis.speak(u);
+    var a=elementNar(); if(!a.paused) return; /* se redă deja ceva: nu întrerupem */
+    a.src=NAR_MUT; var p=a.play();
+    if(p&&p.then) p.then(function(){ NAR_DESCHIS=true; }).catch(function(){}); else NAR_DESCHIS=true;
   }catch(e){}
 }
-function taci(){ try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){} }
+/* încarcă din timp fișierele pasului curent, ca vocea să pornească fără pauză */
+function preincarca(texte){
+  var s=segmente(texte);
+  for(var i=0;i<s.length;i++){
+    var u=fisierAudio(s[i]); if(!u) continue;
+    var gata=false; for(var j=0;j<NAR_PRE.length;j++) if(NAR_PRE[j].u===u){ gata=true; break; }
+    if(gata) continue;
+    try{ var a=new Audio(); a.preload='auto'; a.src=u; NAR_PRE.push({u:u,a:a}); }catch(e){}
+  }
+  while(NAR_PRE.length>24){ var v=NAR_PRE.shift(); try{ v.a.removeAttribute('src'); v.a.load(); }catch(e){} }
+}
+function redaFisier(u,gata,esuat){
+  var a=elementNar(), g=NAR_GEN, inchis=false;
+  function fin(f){ if(inchis||g!==NAR_GEN) return; inchis=true; a.onended=a.onerror=null; f(); }
+  a.onended=function(){ fin(gata); };
+  a.onerror=function(){ fin(esuat); };
+  try{
+    a.src=u; var p=a.play();
+    if(p&&p.then) p.then(function(){ NAR_DESCHIS=true; }).catch(function(){ fin(esuat); });
+  }catch(e){ fin(esuat); }
+}
+function incarcaVoci(){
+  try{ VOCI=(window.speechSynthesis&&speechSynthesis.getVoices())||[]; }catch(e){ VOCI=[]; }
+  VOCE=null;
+  if(!VOCI.length) return;
+  if(S&&S.vociNume) for(var i=0;i<VOCI.length;i++) if(VOCI[i].name===S.vociNume){ VOCE=VOCI[i]; return; }
+  var ro=VOCI.filter(function(v){ return /^ro/i.test(v.lang); });
+  VOCE=ro[0]||null;
+}
+/* rezerva: sinteza browserului (doar pentru texte fără fișier audio) */
+function redaSinteza(t,gata){
+  var g=NAR_GEN;
+  function fin(){ if(g!==NAR_GEN) return; gata(); }
+  try{
+    if(!window.speechSynthesis){ fin(); return; }
+    var u=new SpeechSynthesisUtterance(t);
+    if(VOCE){ u.voice=VOCE; u.lang=VOCE.lang; } else { u.lang='ro-RO'; }
+    u.rate=.95; u.pitch=1; u.volume=1;
+    u.onend=fin; u.onerror=fin;
+    speechSynthesis.speak(u);
+  }catch(e){ fin(); }
+}
+/* citește un text sau o listă de texte, unul după altul */
+function spune(text,dupa){
+  taci();
+  if(!S||!S.voce) return;
+  var s=segmente(text); if(!s.length) return;
+  var g=NAR_GEN;
+  (function urm(i){
+    if(g!==NAR_GEN) return;
+    if(i>=s.length){ if(dupa) dupa(); return; }
+    var u=fisierAudio(s[i]), mai=function(){ urm(i+1); };
+    if(u) redaFisier(u,mai,function(){ redaSinteza(s[i],mai); });
+    else redaSinteza(s[i],mai);
+  })(0);
+}
+function taci(){
+  NAR_GEN++;
+  try{ if(NAR){ NAR.onended=NAR.onerror=null; NAR.pause(); } }catch(e){}
+  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
+}
 function comutaVoce(){ S.voce=!S.voce; if(!S.voce) taci(); sClic(); salveaza(); render(); }
 
 /* ═══════════ FUNDAL: HARTĂ MARINĂ ═══════════ */
@@ -918,6 +1028,7 @@ function confetti(){
 var TEXT_PROLOG='Dacă citești asta, înseamnă că ești destul de curajos. Comoara mea nu e făcută din aur — e ceva mult mai valoros. Ca s-o găsești, treci prin cinci insule. Fiecare îți va da o cifră. Și fii atent, matelotule: pe mare, nu toți cei care zâmbesc spun adevărul.';
 function ecranIntro(){
   var salv=incarca(), reia='';
+  preincarca(TEXT_PROLOG);
   if(salv&&salv.nume&&(salv.gata.length||salv.ins>0||salv.p>0))
     reia='<button class="buton linistit" onclick="reia()">⚓ Continuă cu '+E(salv.nume)+'</button>';
   var corp=
@@ -1007,6 +1118,7 @@ function intraPas(){
   if(p.t==='alege') A.opt=amestecat(p.opt);
   if(p.t==='memorie'){ A.seq=[]; for(var i=0;i<p.lung;i++) A.seq.push(Math.floor(Math.random()*p.pool.length)); A.faza='arata'; aratSir(); }
   if(p.t==='ordine') A.ramase=p.items.slice();
+  if(S.voce) preincarca(texteDin(p));
   if(p.t!=='film'&&p.q&&S.voce) setTimeout(function(){ if(A.pas===p) spune(p.q); },260);
 }
 function inainte(){
@@ -1023,27 +1135,28 @@ function terminaInsula(){
   salveaza(); render();
 }
 function scor(cat,bun){ if(!cat||!S.st[cat]) return; S.st[cat].t++; if(bun) S.st[cat].ok++; }
-function succes(mesaj){
+/* mesaj = ce se afișează; voce = ce se citește, dacă diferă (ex. fără litera căsuței) */
+function succes(mesaj,voce){
   A.rezolvat=true; A.fbTip='da';
-  A.fb=mesaj||'Corect! Bravo, matelotule.';
+  A.fb=mesaj||NAR_FIXE.ok; A.fbV=[voce||A.fb];
   scor(A.pas.cat,A.gres===0);
   if(A.gres===0) S.dub+=2;
-  sOk(); spune(A.fb); salveaza(); render();
+  sOk(); spune(A.fbV); salveaza(); render();
 }
-function esec(mesaj){
+function esec(mesaj,voce){
   A.gres++; A.fbTip='nu';
-  A.fb=mesaj||'Nu e bine. Mai încearcă o dată.';
+  A.fb=mesaj||NAR_FIXE.nu; A.fbV=[voce||A.fb];
   if(S.dub>0) S.dub--;
-  if(A.gres>=2){ A.rezolvat=true; A.fbTip='info'; A.fb=(mesaj||'')+' Uite răspunsul corect, ca să vezi cum se face.'; scor(A.pas.cat,false); }
+  if(A.gres>=2){ A.rezolvat=true; A.fbTip='info'; A.fb=(mesaj||'')+' '+NAR_FIXE.corect; A.fbV=[voce||mesaj,NAR_FIXE.corect]; scor(A.pas.cat,false); }
   else A.aratHint=true;
-  sNu(); spune(A.fb+(A.aratHint&&A.pas.hint?' '+A.pas.hint:'')); salveaza(); render();
+  sNu(); spune(A.aratHint&&A.pas.hint?A.fbV.concat([A.pas.hint]):A.fbV); salveaza(); render();
   var f=document.querySelector('.foaie'); if(f){ f.classList.add('scut'); setTimeout(function(){f.classList.remove('scut');},340); }
 }
 function cereIndiciu(){ A.aratHint=true; if(S.dub>0) S.dub--; sClic(); salveaza(); render(); spune(A.pas.hint); }
 function citesteAcum(){
-  var p=A.pas, t=p.q||'';
-  if(A.fb) t+='. '+A.fb;
-  if(A.aratHint&&p.hint&&!A.rezolvat) t+='. Indiciu: '+p.hint;
+  var p=A.pas, t=[p.q];
+  if(A.fb) t=t.concat(A.fbV||[A.fb]);
+  if(A.aratHint&&p.hint&&!A.rezolvat) t.push(NAR_FIXE.indiciu,p.hint);
   spune(t);
 }
 
@@ -1101,7 +1214,7 @@ function partAlege(p){
 function raspAlege(i){
   if(A.rezolvat) return;
   A.ales=i; var o=A.opt[i];
-  if(o.ok) succes(o.fb||'Exact! Ai socotit bine.'); else esec(o.fb||'Nu e răspunsul bun.');
+  if(o.ok) succes(o.fb||NAR_FIXE.okSocotit); else esec(o.fb||NAR_FIXE.nuRaspuns);
 }
 function partDecizie(p){
   var lit=['A','B','C','D'];
@@ -1133,7 +1246,7 @@ function raspDecizie(i){
   S.dub=Math.max(0,S.dub+(o.dub||0));
   scor('capcana',o.v==='bun');
   if(o.v==='bun') sOk(); else if(o.v==='rau') sNu(); else sClic();
-  spune(o.fb+' '+(A.pas.invat||''));
+  spune([o.fb,A.pas.invat]);
   salveaza(); render();
 }
 function partHarta(p){
@@ -1158,8 +1271,8 @@ function partHarta(p){
 function raspHarta(id){
   if(A.rezolvat) return;
   A.ales=id;
-  if(id===A.pas.ras) succes('Ai găsit locul exact: '+id+'. Sapi și dai de ceva tare!');
-  else esec('La '+id+' nu e nimic. Numără din nou pașii, unul câte unul.');
+  if(id===A.pas.ras) succes('Ai găsit locul exact: '+id+'. Sapi și dai de ceva tare!',NAR_FIXE.hartaDa);
+  else esec('La '+id+' nu e nimic. Numără din nou pașii, unul câte unul.',NAR_FIXE.hartaNu);
 }
 function partCod(p){
   var n=p.ras.length, i, slots='';
@@ -1179,8 +1292,8 @@ function stergeCod(){ if(A.rezolvat) return; A.buf.pop(); sClic(); render(); }
 function verificaCod(){
   if(A.rezolvat) return;
   var d=A.buf.join('');
-  if(d===A.pas.ras) succes('Lacătul se deschide cu un pocnet: '+A.pas.ras+'.');
-  else { esec('Codul '+d+' nu deschide lacătul.'); A.buf=A.rezolvat?A.pas.ras.split(''):[]; render(); }
+  if(d===A.pas.ras) succes('Lacătul se deschide cu un pocnet: '+A.pas.ras+'.',NAR_FIXE.codDa);
+  else { esec('Codul '+d+' nu deschide lacătul.',NAR_FIXE.codNu); A.buf=A.rezolvat?A.pas.ras.split(''):[]; render(); }
 }
 function partMemorie(p){
   var tiles=p.pool.map(function(s,i){
@@ -1211,11 +1324,11 @@ function tastaMem(i){
   ton(392+i*90,.16); A.buf.push(i);
   var k=A.buf.length-1;
   if(A.buf[k]!==A.seq[k]){
-    A.buf=[]; esec('Ups, nu era ăsta. Ascultă șirul încă o dată.');
+    A.buf=[]; esec(NAR_FIXE.memNu);
     if(A.rezolvat) A.buf=A.seq.slice(); else A.faza='raspunde';
     render(); return;
   }
-  if(A.buf.length===A.seq.length){ succes('Ai repetat tot șirul, fără nicio greșeală!'); return; }
+  if(A.buf.length===A.seq.length){ succes(NAR_FIXE.memDa); return; }
   render();
 }
 function partOrdine(p){
@@ -1233,12 +1346,12 @@ function tastaOrd(v){
   var min=Math.min.apply(null,A.ramase);
   if(v!==min){
     A.buf=[]; A.ramase=A.pas.items.slice();
-    esec('Scoica de '+v+' nu e cea mai mică dintre cele rămase. O luăm de la capăt, calm.');
+    esec('Scoica de '+v+' nu e cea mai mică dintre cele rămase. O luăm de la capăt, calm.',NAR_FIXE.ordNu);
     if(A.rezolvat) A.buf=A.pas.items.slice().sort(function(a,b){ return a-b; });
     render(); return;
   }
   A.buf.push(v); A.ramase.splice(A.ramase.indexOf(v),1); sClic();
-  if(!A.ramase.length) succes('Toate scoicile sunt la locul lor, de la mică la mare!');
+  if(!A.ramase.length) succes(NAR_FIXE.ordDa);
   else render();
 }
 function partPremiu(){
@@ -1248,7 +1361,7 @@ function partPremiu(){
     if(I.obiect&&S.obiecte.map(function(o){ return o.n; }).indexOf(I.obiect.n)<0) S.obiecte.push(I.obiect);
     if(I.indiciu&&S.indicii.map(function(c){ return c.poz; }).indexOf(I.indiciu.poz)<0) S.indicii.push(I.indiciu);
     S.dub+=8; sPremiu(); confetti(); salveaza();
-    spune('Ai primit '+I.obiect.n+'. '+(I.indiciu?I.indiciu.text:''));
+    spune([textPrimit(I.obiect.n),I.indiciu?I.indiciu.text:'']);
   }
   return {c:'<div style="text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center">'+
       '<div style="font-size:clamp(34px,7vh,56px);line-height:1">'+I.obiect.ic+'</div>'+
@@ -1304,35 +1417,17 @@ function jurnal(){
   sClic();
 }
 function fereastraVoce(){
-  incarcaVoci();
-  var ro=vociRo(), alte=VOCI.filter(function(v){ return !/^ro/i.test(v.lang); });
-  var lista='';
-  if(!VOCI.length){
-    lista='<div class="verdict info"><span class="sm">🎙️</span><div><b>Nicio voce găsită</b>Dispozitivul acesta nu are voci instalate pentru browser. Pe Windows le adaugi din Setări → Oră și limbă → Voce.</div></div>';
-  } else {
-    if(!ro.length) lista+='<div class="verdict info"><span class="sm">⚠️</span><div><b>Nicio voce românească</b>Nu am găsit o voce în română pe acest dispozitiv. Poți alege una din lista de mai jos, dar va citi cu accent străin. În Microsoft Edge apare de obicei vocea feminină «Alina».</div></div>';
-    lista+='<div class="lista-voci">'+ro.concat(alte).slice(0,14).map(function(v,i){
-      var f=FEM.test(v.name);
-      return '<button class="voce-op'+(VOCE&&VOCE.name===v.name?' ales':'')+'" onclick="alegeVoce('+i+')">'+
-        (f?'👩':'🧔')+'<span>'+E(v.name)+'<small>'+E(v.lang)+(f?' · voce feminină':'')+'</small></span></button>';
-    }).join('')+'</div>';
-  }
+  var nota=manifest()
+    ?'<div class="verdict info"><span class="sm">🎙️</span><div><b>Voce românească inclusă</b>Povestea, probele și indiciile sunt citite de o voce românească înregistrată în joc. Nu trebuie să instalezi nimic.</div></div>'
+    :'<div class="verdict info"><span class="sm">⚠️</span><div><b>Înregistrările lipsesc</b>Nu găsesc fișierele audio ale jocului, așa că folosesc vocea browserului — care poate citi cu accent străin.</div></div>';
   fereastra(
     '<div class="eticheta">Naratoarea</div><h2 class="titlu" style="font-size:clamp(1.05rem,2.6vh,1.4rem)">Cine citește povestea</h2><hr class="val">',
     '<p>Povestea și probele pot fi citite cu voce tare — util pentru clasele 1–2, care încă silabisesc.</p>'+
     '<div><button class="buton'+(S.voce?'':' linistit')+'" onclick="comutaVoce();fereastraVoce()">'+(S.voce?'🔊 Naratoarea este PORNITĂ':'🔇 Naratoarea este OPRITĂ')+'</button></div>'+
-    lista,
-    '<button class="buton linistit" onclick="spune(\'Bună! Eu sunt naratoarea. Îți voi citi povestea comorii.\')">▶︎ Ascultă proba</button>'+
+    nota,
+    '<button class="buton linistit" onclick="spune(NAR_FIXE.proba)">▶︎ Ascultă proba</button>'+
     '<button class="buton" onclick="inchide()">Gata</button>');
   sClic();
-}
-function alegeVoce(i){
-  var ro=vociRo(), alte=VOCI.filter(function(v){ return !/^ro/i.test(v.lang); });
-  var v=ro.concat(alte)[i];
-  if(!v) return;
-  VOCE=v; S.vociNume=v.name; S.voce=true; salveaza();
-  spune('Am ales vocea aceasta. Îți voi citi povestea.');
-  fereastraVoce();
 }
 function inchide(){ document.getElementById('voal').innerHTML=''; sClic(); }
 
@@ -2072,7 +2167,8 @@ function paceazaFilm(p){
   var noi=[], t=vechi[0]||0;
   for(var i=0;i<p.replici.length;i++){
     noi.push(t);
-    var nevoie=Math.max(1.2,p.replici[i].x.split(/\s+/).length/RATA+.45);
+    var d=durataAudio(p.replici[i].x);
+    var nevoie=Math.max(1.2,(d||p.replici[i].x.split(/\s+/).length/RATA)+.45);
     var gol=(i+1<vechi.length)?vechi[i+1]-vechi[i]:(p.dur-vechi[i]);
     t+=Math.max(gol,nevoie);
   }
@@ -2159,7 +2255,7 @@ function terminaFilm(totul){
     '<button class="buton linistit" onclick="revezi()">🔁 Revezi</button>'+
     '<button class="buton linistit" onclick="citesteFilm()" title="Citește textul">🔊</button>';
 }
-function citesteFilm(){ spune(A.pas.replici.map(function(r){ return r.x; }).join(' ')); }
+function citesteFilm(){ spune(A.pas.replici.map(function(r){ return r.x; })); }
 function sariFilm(){
   if(A.filmGata){ inainte(); return; }
   A.fg=-1; taci(); opresteAmb();
@@ -2180,6 +2276,9 @@ try{
     speechSynthesis.onvoiceschanged=function(){ incarcaVoci(); };
   }
 }catch(e){}
+addEventListener('pointerdown',deschideNar,true);
+addEventListener('pointerup',deschideNar,true);
+addEventListener('keydown',deschideNar,true);
 deseneazaMarea();
 addEventListener('resize',function(){
   deseneazaMarea();
