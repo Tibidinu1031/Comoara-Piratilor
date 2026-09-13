@@ -437,12 +437,12 @@ INSULE.push({
       opt:[{x:'10',ok:true},{x:'9'},{x:'11'},{x:'12'}],
       hint:'Vezi cu cât crește de fiecare dată: de la 2 la 4, de la 4 la 6...',
       invat:'Într-un șir, caută mai întâi regula. Regula îți spune tot ce urmează.',
-      cap:{q:'— Trei uși. Pe Ușa 1 scrie: «Comoara e aici». Pe Ușa 2: «Comoara NU e aici». Pe Ușa 3: «Comoara e la Ușa 1». Doar UN mesaj spune adevărul. Ce ușă alegi?',
-        opt:[{x:'Ușa 3',ok:true,fb:'Exact. Dacă e la Ușa 3: mesajul 1 e fals, mesajul 2 e adevărat, mesajul 3 e fals. Un singur adevăr — se potrivește.'},
-             {x:'Ușa 1',fb:'Dacă ar fi la Ușa 1, atunci și mesajul 1 și mesajul 3 ar fi adevărate. Două adevăruri — prea multe.'},
-             {x:'Ușa 2',fb:'Dacă ar fi la Ușa 2, toate trei mesajele ar fi false. Zero adevăruri — prea puține.'}],
-        hint:'Ia pe rând fiecare variantă: «Dacă ar fi la Ușa 1, câte mesaje ar fi adevărate?» Caută varianta cu exact UN adevăr.',
-        invat:'Când nu poți ghici, verifică fiecare variantă pe rând și numără. Așa gândesc detectivii.'}},
+      cap:{q:'— Trei uși închise. Comoara e în spatele uneia singure. Pe Ușa 1 scrie: «Comoara e în spatele meu». Pe Ușa 2 scrie: «Comoara NU e în spatele meu». Pe Ușa 3 scrie: «Comoara e în spatele Ușii 1». Doar UN mesaj din cele trei spune adevărul, celelalte două mint. În spatele cărei uși se află comoara?',
+        opt:[{x:'Ușa 3',ok:true,fb:'Comoara e în spatele Ușii 3. Verifică: Ușa 1 zice «e în spatele meu» — minte. Ușa 2 zice «NU e în spatele meu» — spune adevărul, chiar nu e acolo. Ușa 3 zice «e în spatele Ușii 1» — minte. Un singur mesaj adevărat, exact cât cere regula. Atenție: ușa care spune adevărul e Ușa 2, dar comoara e la Ușa 3 — Ușa 2 îți spune doar unde NU e comoara.'},
+             {x:'Ușa 1',fb:'Dacă comoara ar fi în spatele Ușii 1, toate trei mesajele ar spune adevărul: Ușa 1 («e în spatele meu») — adevărat. Ușa 2 («NU e în spatele meu») — adevărat, că e la 1, nu la 2. Ușa 3 («e în spatele Ușii 1») — adevărat. Trei adevăruri, dar regula spune că e doar UNUL. Deci nu poate fi la Ușa 1.'},
+             {x:'Ușa 2',fb:'Dacă comoara ar fi în spatele Ușii 2, toate trei mesajele ar minți: Ușa 1 («e în spatele meu») — fals. Ușa 2 («NU e în spatele meu») — fals, că ar fi chiar acolo. Ușa 3 («e în spatele Ușii 1») — fals. Zero adevăruri, dar regula spune că e exact UNUL. Deci nu poate fi la Ușa 2.'}],
+        hint:'Nu căuta ușa care spune adevărul — caută ușa unde e comoara. Presupune pe rând: «Dacă ar fi la Ușa 1, câte mesaje ar fi adevărate?» Apoi la Ușa 2, apoi la Ușa 3. Comoara e acolo unde iese exact UN mesaj adevărat.',
+        invat:'Ușa care spune adevărul nu e neapărat ușa cu comoara. Când nu poți ghici, presupune fiecare variantă pe rând, numără adevărurile și păstreaz-o pe cea care respectă regula. Așa gândesc detectivii.'}},
 
     {t:'cod',cat:'cod',cine:ECOU,mod:'cifre',
       q:'— Ușa are un lacăt cu 3 cifre. Pe perete scrie: prima cifră = 2+3. A doua = 7−4. A treia = câte degete ai la o mână.',
@@ -1143,11 +1143,16 @@ function succes(mesaj,voce){
   if(A.gres===0) S.dub+=2;
   sOk(); spune(A.fbV); salveaza(); render();
 }
-function esec(mesaj,voce){
+function esec(mesaj,voce,explicatie){
   A.gres++; A.fbTip='nu';
   A.fb=mesaj||NAR_FIXE.nu; A.fbV=[voce||A.fb];
   if(S.dub>0) S.dub--;
-  if(A.gres>=2){ A.rezolvat=true; A.fbTip='info'; A.fb=(mesaj||'')+' '+NAR_FIXE.corect; A.fbV=[voce||mesaj,NAR_FIXE.corect]; scor(A.pas.cat,false); }
+  if(A.gres>=2){
+    A.rezolvat=true; A.fbTip='info';
+    A.fb=(mesaj||'')+' '+NAR_FIXE.corect+(explicatie?' '+explicatie:'');
+    A.fbV=[voce||mesaj,NAR_FIXE.corect].concat(explicatie?[explicatie]:[]);
+    scor(A.pas.cat,false);
+  }
   else A.aratHint=true;
   sNu(); spune(A.aratHint&&A.pas.hint?A.fbV.concat([A.pas.hint]):A.fbV); salveaza(); render();
   var f=document.querySelector('.foaie'); if(f){ f.classList.add('scut'); setTimeout(function(){f.classList.remove('scut');},340); }
@@ -1214,7 +1219,9 @@ function partAlege(p){
 function raspAlege(i){
   if(A.rezolvat) return;
   A.ales=i; var o=A.opt[i];
-  if(o.ok) succes(o.fb||NAR_FIXE.okSocotit); else esec(o.fb||NAR_FIXE.nuRaspuns);
+  if(o.ok){ succes(o.fb||NAR_FIXE.okSocotit); return; }
+  var bun=A.opt.filter(function(x){ return x.ok; })[0];
+  esec(o.fb||NAR_FIXE.nuRaspuns,null,bun&&bun.fb);
 }
 function partDecizie(p){
   var lit=['A','B','C','D'];
