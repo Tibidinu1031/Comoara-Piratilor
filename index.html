@@ -209,6 +209,18 @@ hr.val{border:0;height:7px;margin:8px 0 0;opacity:.45;
 }
 .tasta:hover{background:#fff}
 .tasta:active{transform:translateY(2px);box-shadow:0 1px 0 var(--umbra)}
+.tabla{padding:10px 14px;border-radius:10px;background:#fffaf0;border:2px dashed var(--umbra);transform:rotate(-.3deg);display:grid;gap:4px;justify-items:center;text-align:center}
+.tabla div{font-family:var(--display);font-weight:700;font-size:clamp(.98rem,2.5vh,1.25rem);line-height:1.3}
+.tabla .mica{font-family:var(--corp);font-weight:400;font-size:.78rem;color:var(--cerneala-2)}
+.lumi{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.lume{text-align:left;padding:9px 10px;border-radius:11px;background:#fffaf0;border:2px solid var(--umbra);box-shadow:0 3px 0 var(--umbra);display:grid;grid-template-columns:auto 1fr;gap:4px 9px;align-items:center;cursor:pointer;font:inherit;color:inherit}
+.lume:hover{transform:translateY(-2px);border-color:var(--alama-2)}
+.lume.acum{background:#f6dfae;border-color:var(--alama-2);box-shadow:0 3px 0 var(--alama-2)}
+.lume.gata{background:#e4f4ea;border-color:var(--alge)}
+.lume .ic{font-size:clamp(20px,3.6vh,27px);grid-row:span 2}
+.lume b{font-family:var(--display);font-size:.9rem;line-height:1.15}
+.lume .nr{font-family:var(--log);font-size:.66rem;color:var(--cerneala-2)}
+.lume .bara{grid-column:2;display:block}
 .cifru{display:grid;grid-template-columns:repeat(auto-fit,minmax(54px,1fr));gap:6px;padding:9px;border-radius:10px;background:#f7edd6;border:1px dashed var(--umbra)}
 .cifru div{text-align:center;font-family:var(--log);font-size:.9rem}
 .cifru b{display:block;font-size:clamp(1rem,2.4vh,1.3rem);color:var(--alama-2)}
@@ -358,7 +370,7 @@ INSULE.push({
       hint:'Nordul e SUS, sudul e JOS. Estul e la DREAPTA, vestul la STÂNGA. Numără pas cu pas, nu sări.',
       invat:'Pe hartă mergi mereu pas cu pas și numeri cu degetul. Așa nu te pierzi niciodată.',
       cap:{q:'— Pornește de la PALMIER 🌴: 2 pași spre VEST, apoi 3 pași spre SUD, apoi 1 pas spre EST. Unde sapi?',
-        cols:['A','B','C','D','E'],rows:5,plecare:'D2',marci:{A1:'🌊',E5:'🐚',B4:'🪨'},ras:'C5'}},
+        cols:['A','B','C','D','E'],rows:5,plecare:'D2',marci:{A1:'🌊',E5:'🐚',B4:'⚫'},ras:'C5'}},
 
     {t:'alege',cat:'mat',cine:COCO,
       q:'— Pe 2 palmieri sunt câte 5 nuci de cocos. O maimuță fură 3 nuci. Câte nuci au mai rămas?',
@@ -523,7 +535,7 @@ INSULE.push({
 
     {t:'alege',cat:'logic',cine:VANT,
       q:'Trei poteci trec mlaștina cu crocodili. Pe un copac, un explorator a scris: «Poteca sigură are tot atâtea pietre câte degete are o mână.» Ce potecă alegi?',
-      opt:[{x:'Poteca B — 5 pietre 🪨🪨🪨🪨🪨',ok:true},{x:'Poteca A — 3 pietre 🪨🪨🪨'},{x:'Poteca C — 7 pietre 🪨🪨🪨🪨🪨🪨🪨'}],
+      opt:[{x:'Poteca B — 5 pietre ⚫⚫⚫⚫⚫',ok:true},{x:'Poteca A — 3 pietre ⚫⚫⚫'},{x:'Poteca C — 7 pietre ⚫⚫⚫⚫⚫⚫⚫'}],
       hint:'Câte degete are o mână? Numără pietrele de pe fiecare potecă și compară.',
       invat:'Indiciul conținea deja răspunsul. Citește-l până la capăt, apoi numără — nu ghici.',
       cap:{q:'Trei poteci trec mlaștina. Pe copac scrie: «Poteca sigură are un număr de pietre care este PAR și mai MARE decât 4.» Ce potecă alegi?',
@@ -741,19 +753,440 @@ INSULE.push({
   indiciu:null,
   final:[]
 });
+var LUMEA1=INSULE;
+
+/* ═══════════════════════════════════════════════════════
+   LUMI GENERATE · lumile 2–100
+   Fiecare lume se construiește determinist din numărul ei (același conținut
+   la fiecare încărcare). Textele citite de naratoare vin doar din băncile de
+   mai jos (deci au înregistrări); datele care variază (numere, drumuri,
+   cifruri) se afișează pe o „tăbliță" și nu se citesc.
+   ═══════════════════════════════════════════════════════ */
+var NR_LUMI=100;
+var NUME_LUMI=['Golful Ceții','Marea Smaraldelor','Arhipelagul Furtunii','Apele Argintii','Strâmtoarea Balenei','Marea Stelelor Căzute','Golful Sirenelor Tăcute','Insulele Vântului Rece','Laguna Coralilor Roșii','Marea Corăbiilor Scufundate',
+'Țărmul Crabilor Uriași','Oceanul Fără Fund','Golful Felinarului','Marea Nisipurilor Cântătoare','Insulele Papagalilor','Arhipelagul Cufărului','Marea Lunii Verzi','Apele Broaștei Țestoase','Strâmtoarea Oaselor','Golful Delfinilor',
+'Marea Perlelor Negre','Insulele Ceasului Stricat','Laguna Albastră','Marea Pescărușilor','Țărmul Vulcanilor Gemeni','Golful Ancorei Ruginite','Marea Hărților Rupte','Arhipelagul Ecoului','Apele Caracatiței','Insulele Busolei',
+'Marea Furtunilor de Vară','Golful Scoicilor de Aur','Marea Norilor Roz','Strâmtoarea Rechinului','Insulele Cocotierilor','Laguna Meduzelor','Marea Ghețurilor Plutitoare','Țărmul Comorilor Pierdute','Golful Cârmei Sparte','Marea Sticlelor cu Mesaje',
+'Arhipelagul Maimuțelor','Apele Cristalului','Insulele Tunetului','Marea Velelor Albe','Golful Somnului','Marea Corbului Negru','Strâmtoarea Cheii','Laguna Ochiului de Pisică','Insulele Fluierului','Marea Umbrelor Lungi',
+'Golful Peștilor Zburători','Marea Cerului Jos','Țărmul Pinguinilor Rătăciți','Arhipelagul Ploii Calde','Apele Ceaiului','Insulele Trandafirului de Mare','Marea Lacătelor','Golful Papucului Pierdut','Marea Zmeului de Hârtie','Strâmtoarea Cufărului',
+'Laguna Licuricilor','Insulele Foșnetului','Marea Broaștelor Cântărețe','Golful Șarpelui de Apă','Marea celor Cinci Degete','Țărmul Butoaielor','Arhipelagul Stâncilor Albe','Apele Tăcerii','Insulele Cornului de Ceață','Marea Nucilor de Cocos',
+'Golful Râsului','Marea Fumului Albastru','Strâmtoarea Vulturului','Laguna Nisipului Roz','Insulele Ancorei','Marea Vâslelor Rupte','Golful Steagului Negru','Marea Cufărului Fără Cheie','Țărmul Scoicilor Vorbitoare','Arhipelagul Palmierilor Strâmbi',
+'Apele Timpului Pierdut','Insulele Ciocănitorii','Marea Oglinzilor','Golful Prieteniei','Marea Papagalilor Gălăgioși','Strâmtoarea Norocului','Laguna Stelelor de Mare','Insulele Sforii Încâlcite','Marea Buzunarului Gol','Golful Bufniței',
+'Marea Ultimei Hărți','Țărmul Vântului Bun','Arhipelagul Zorilor','Apele Curcubeului','Insulele Șoaptelor','Marea Brânzei de Pirat','Golful Tobei','Marea Călătorilor Cuminți','Strâmtoarea Sfârșitului Lumii'];
+var EMOJI_LUMI=['🌊','🏝️','⛵','🧭','🐚','🦜','🐙','🦈','🐢','🦀','🌋','🕯️','🌴','💎','🗺️','⚓','🔔','🐠','🐋','🔱','🌙','⭐','🐬','🏴‍☠️'];
+
+function rngNou(seed){
+  var a=(seed>>>0)||1;
+  return function(){
+    a=(a+0x6D2B79F5)>>>0; var t=a;
+    t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61);
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
+function intre(r,a,b){ return a+Math.floor(r()*(b-a+1)); }
+function dintre(r,l){ return l[Math.floor(r()*l.length)]; }
+function amestecaR(r,l){ l=l.slice(); for(var i=l.length-1;i>0;i--){ var j=Math.floor(r()*(i+1)),t=l[i]; l[i]=l[j]; l[j]=t; } return l; }
+/* variante de răspuns: corectul plus 3 greșite, distincte și pozitive */
+function optiuni(r,corect,unit,alte){
+  var v=[corect], cand=(alte||[]).concat([corect+1,corect-1,corect+2,corect-2,corect+3,corect-3,corect+10,corect*2]);
+  for(var i=0;i<cand.length&&v.length<4;i++) if(cand[i]>=0&&v.indexOf(cand[i])<0) v.push(cand[i]);
+  return v.map(function(n,i){ return {x:unit?unit(n):String(n),ok:i===0}; });
+}
+function plural(n,unu,multe){ return n===1?'1 '+unu:(n<20?n+' '+multe:n+' de '+multe); }
+var ORDINAL=['prima','a doua','a treia','a patra','a cincea'];
+var GHICI_CIFRA={0:'câte aripi are un pește',1:'câte nasuri ai',2:'câți ochi ai',3:'câte laturi are un triunghi',4:'câte picioare are o pisică',5:'câte degete ai la o mână',6:'câte picioare are o furnică',7:'câte zile are o săptămână',8:'câte picioare are un păianjen'};
+
+/* ——— băncile de texte narate (fixe) ——— */
+var GEN_TXT={
+  harta:{q:'— Comoara mea mică e îngropată pe plajă. Drumul e scris pe tăbliță: pornește de la palmier și numără pașii. Apasă pătratul unde sapi!',
+    hint:'Nordul e SUS, sudul e JOS. Estul e la DREAPTA, vestul la STÂNGA. Numără pas cu pas, nu sări.',
+    invat:'Pe hartă mergi mereu pas cu pas și numeri cu degetul. Așa nu te pierzi niciodată.'},
+  coord:{q:'— Perla mea e ascunsă la coordonata scrisă pe tăbliță. Apasă acolo, piratule.',
+    hint:'Literele de sus sunt coloanele. Cifrele din stânga sunt rândurile. Pune un deget pe literă, altul pe rând și mergi până se întâlnesc.',
+    invat:'O coordonată e o întâlnire: mai întâi litera (coloana), apoi cifra (rândul). Așa se citesc toate hărțile din lume.',
+    hintCap:'Numără literele alfabetului pe degete: A, B, C... Apoi socotește rândul.'},
+  socot:{q:'— O socoteală pentru tine. Citește tăblița cu atenție și alege răspunsul bun.',
+    hint:'Citește tăblița încă o dată, rar. Numără pe degete ce se adună și ce se scade.',
+    invat:'Întâi aduni tot, apoi scazi ce se pierde. Ordinea contează.'},
+  sir:{q:'— Pietrele luminoase de pe jos formează un șir. E scris pe tăbliță. Ce număr urmează?',
+    hint:'Vezi cu cât crește de fiecare dată și adaugă la ultimul număr.',
+    invat:'Un șir are întotdeauna o regulă ascunsă. Găsește regula și ai găsit răspunsul.',
+    hintCap:'Aici nu se adaugă mereu același număr. Încearcă să vezi dacă se înmulțește sau dacă scade.'},
+  lacat:{q:'— Ușa are un lacăt cu cifre. Regulile sunt scrise pe tăbliță, câte una pentru fiecare cifră. Rezolvă-le pe rând, de sus în jos.',
+    hint:'Rezolvă rândurile pe rând, de sus în jos, și apasă cifrele în aceeași ordine.',
+    invat:'Un lacăt cu mai multe cifre nu e o problemă mare — sunt doar mai multe probleme mici, puse una după alta.'},
+  cifru:{q:'— Pe perete sunt săpate niște cifre. Alături e tabelul meu de semne. Ce cuvânt scrie?',
+    hint:'Ia cifrele de pe tăbliță una câte una și caută fiecare în tabel. Prima cifră este... care literă?',
+    invat:'Un cod se sparge răbdător, semn cu semn. Nu sări la ultimul până nu l-ai găsit pe primul.'},
+  mem:{q:'— Ascultă și privește: îți arăt un șir de semne. Ține minte ORDINEA, apoi apasă-le la fel.',
+    hint:'Spune-le în gând, ca pe o poezie scurtă. Așa se ține minte mai ușor.',
+    invat:'Ca să ții minte un șir, spune-l în gând ca pe un cântecel. Creierul ține minte ritmul.'},
+  ord:{q:'— Așază scoicile în ordine, de la cea mai MICĂ la cea mai MARE. Apasă-le în ordinea corectă.',
+    hint:'Caută mai întâi cel mai mic număr dintre toate și apasă-l. Apoi caută cel mai mic dintre cele rămase.',
+    invat:'Ca să ordonezi ceva, alegi de fiecare dată cel mai mic dintre cele rămase. Un pas simplu, repetat, rezolvă o problemă mare.'},
+  ceas:{q:'— Ceasul meu de buzunar arată ora de pe cadran. Pe tăbliță scrie la ce oră pleacă corabia. Cât timp mai ai?',
+    hint:'Numără pe ceas, din oră în oră, de la ora de acum până la ora plecării.',
+    invat:'Ca să afli cât timp a trecut, scazi ora mică din ora mare. Sau numeri pe cadran, din oră în oră.',
+    hintCap:'Numără întâi minutele până la ora fixă. Apoi adaugă minutele care mai rămân după.'},
+  balanta:{q:'— Uită-te la balanța de pe tăbliță. Câte pietre mici cântăresc cât pietrele mari?',
+    hint:'Află întâi cât valorează O SINGURĂ piatră mare. Apoi adună de câte ori e nevoie.',
+    invat:'Când știi cât valorează UNUL, afli imediat cât valorează oricâți. Asta e cheia oricărei schimbări corecte.'},
+  poteci:{q:'— Trei poteci trec mlaștina cu crocodili. Pe copac e scris care potecă e sigură. Citește tăblița și alege.',
+    hint:'Citește condiția până la capăt. Apoi numără pietrele fiecărei poteci și verifică.',
+    invat:'Indiciul conținea deja răspunsul. Citește-l până la capăt, apoi numără — nu ghici.',
+    invatCap:'Când un indiciu are DOUĂ condiții, răspunsul bun trebuie să le respecte pe amândouă. Verifică-le pe rând.'},
+  lacatFinal:{q:'Lacătul cere un cod din 5 cifre. Tot ce ai nevoie e deja în jurnalul tău de bord — fiecare insulă ți-a dat o cifră și poziția ei.',
+    hint:'Deschide jurnalul. Un indiciu spune «PRIMA cifră», altul «A DOUA cifră»... Pune-le în ordine, de la poziția 1 la poziția 5.',
+    invat:'Ai adunat cinci informații de pe cinci insule diferite și le-ai pus cap la cap. Așa se rezolvă problemele mari: din bucăți mici, strânse cu răbdare.'}
+};
+
+var BIOMURI={
+  plaja:{e:'🏝️',nume:['Plaja Nucilor','Golful Crabilor','Plaja Scoicilor','Limba de Nisip','Plaja Cocotierilor','Golful Țestoasei'],
+    gardieni:[{n:'Rico, papagalul',e:'🦜',p:'papagal'},{n:'Clește, crabul',e:'🦀'},{n:'Tina, țestoasa',e:'🐢'}],
+    intro:[['Vântul e bun și marea e liniștită. La orizont crește o insulă cu nisip alb.','Cobori pe plajă. Scoicile scârțâie sub tălpi și palmierii foșnesc deasupra ta.','— Stai! Pe insula asta nu se trece cu sabia. Se trece cu mintea.'],
+           ['Corabia alunecă pe valuri mici, spre o plajă lungă și aurie.','Tragi barca pe nisip. E cald, iar aerul miroase a nuci de cocos.','— Bun venit, matelotule! Dacă vrei să mergi mai departe, arată-mi ce știi.']],
+    final:['— Nu ești deloc rău, matelotule. Ia asta, ți-ai câștigat-o.','În nisip găsești și o bucată ruptă de hartă, cu drumul spre insula următoare.'],
+    cadre:[{pana:6,scena:'mare',par:{paleta:'zi',tinta:'palmier',tx:.82,crestere:true}},{pana:14,scena:'plaja',par:{paleta:'zi',mers:true}}],
+    cadruFinal:{scena:'plaja',par:{paleta:'apus'}},
+    probe:['harta','socot','mem','ord','sir'],pool:['🐚','⭐','🌴','🦀','🐠','🐬']},
+  pestera:{e:'🕯️',nume:['Peștera Ecoului','Grota Cristalelor','Peștera Liliecilor','Grota Scufundată','Peștera Șoaptelor','Grota Felinarului'],
+    gardieni:[{n:'Ecoul peșterii',e:'🕯️'},{n:'Bâzâilă, liliacul',e:'🦇'},{n:'Păianjenul tăcut',e:'🕷️'}],
+    intro:[['Cerul se face vânăt. În față, o insulă de piatră neagră iese din valuri.','Ancorezi la adăpost. În mijlocul insulei cască o gură de peșteră întunecată.','— Intră, dacă știi să citești semnele. Aici pereții vorbesc în cifre.'],
+           ['Marea e agitată și stâncile sunt alunecoase. Insula asta n-are nici iarbă, nici copaci.','Aprinzi un felinar și pășești în peșteră. Picăturile de apă bat ca un ceas.','— Cine tulbură liniștea? Răspunde la întrebările mele, sau ieși cum ai intrat.']],
+    final:['— Bine... bine. Ia asta. Ți-ai câștigat-o cinstit.','Din perete se desprinde o bucată de hartă. Pe ea, drumul spre insula următoare.'],
+    cadre:[{pana:6,scena:'mare',par:{paleta:'furtuna',tinta:'stanca',tx:.72,crestere:true}},{pana:14,scena:'pestera',par:{}}],
+    cadruFinal:{scena:'pestera',par:{inauntru:true}},
+    probe:['cifru','lacat','sir','mem','balanta'],pool:['💎','🔮','🕯️','🦇','⚫','🔑']},
+  jungla:{e:'🌴',nume:['Jungla Șarpelui','Jungla Maimuțelor','Pădurea Umedă','Jungla Florilor Dulci','Jungla Papagalilor','Poteca Crocodililor'],
+    gardieni:[{n:'Șarpele verde',e:'🐍',p:'sarpe'},{n:'Chichi, maimuța',e:'🐒'},{n:'Broscoiul Orac',e:'🐸'}],
+    intro:[['Dimineața e albastră și caldă. Insula e o pată de verde gros.','Intri în junglă. Aerul e umed și miroase a flori dulci. Ceva fâșâie prin frunze.','— Ssss... Poteca e a mea. Treci doar dacă răspunzi bine.'],
+           ['Insula e acoperită de o pădure deasă, plină de zgomote.','Frunzele îți trec peste față. Undeva, sus, râd maimuțele.','— Hei, piratule! Ai ajuns pe insula noastră. Să vedem cât ești de isteț.']],
+    final:['— Ai trecut. Ia asta, e a ta acum.','Sub un copac bătrân găsești o bucată de hartă, mototolită și pătată de suc de mango.'],
+    cadre:[{pana:6,scena:'mare',par:{paleta:'zi',tinta:'palmier',tx:.72,crestere:true}},{pana:14,scena:'jungla',par:{}}],
+    cadruFinal:{scena:'jungla',par:{mers:false}},
+    probe:['socot','sir','poteci','lacat','mem'],pool:['🐒','🍌','🐍','🌺','🦋','🥥']},
+  recif:{e:'🐚',nume:['Recifele Sirenei','Laguna Perlelor','Recifele Roz','Grădina de Corali','Recifele Peștilor Pictați','Stânca Sirenei'],
+    gardieni:[{n:'Sirena Maré',e:'🧜',p:'sirena'},{n:'Fluier, delfinul',e:'🐬'},{n:'Caracatița Opt-Brațe',e:'🐙'}],
+    intro:[['Marea se face tot mai limpede, până vezi fundul.','Corabia alunecă peste un recif de corali roz și pești care par pictați de mână.','— Un pirat! Ce noroc pe mine. Hai să ne jucăm puțin, dar cu atenție.'],
+           ['Apa e ca sticla. Sub corabie trec bancuri de pești argintii.','Ancorezi lângă un recif. Pe o stâncă din mijlocul apei stă cineva și fredonează.','— Bun venit în laguna mea. Cine gândește limpede, trece. Cine se grăbește, se udă.']],
+    final:['— Ia asta. Ai câștigat-o cu ochii tăi ageri.','Sub o scoică mare găsești o bucată de hartă. Pe ea, drumul spre insula următoare.'],
+    cadre:[{pana:6,scena:'mare',par:{paleta:'zi',cx:.5}},{pana:14,scena:'recif',par:{paleta:'zi'}}],
+    cadruFinal:{scena:'recif',par:{paleta:'apus'}},
+    probe:['coord','socot','ord','mem','cifru'],pool:['🔵','🟡','🔴','🟢','🟣','🟠']},
+  vulcan:{e:'🌋',nume:['Vulcanul Adormit','Muntele Fumegând','Vulcanul Sforăitor','Insula de Cenușă','Vulcanul Roșu','Muntele Scânteilor'],
+    gardieni:[{n:'Bătrânul Cenușă',e:'🧙',p:'pustnic'},{n:'Șopârla de foc',e:'🦎'},{n:'Cioara fumurie',e:'🦅'}],
+    intro:[['La orizont, o insulă fumegă. Un munte negru sforăie ca un uriaș adormit.','Cenușa cade încet, ca o zăpadă caldă. Pământul e fierbinte sub tălpi.','— Vulcanul se trezește curând. Ai puțin timp, piratule. Dar cine se grăbește greșește de două ori.'],
+           ['Marea e caldă și cerul e roșu. Insula din față scoate fum pe vârf.','Urci pe pietre negre și calde. Din crăpături iese abur.','— Ai venit până aici? Atunci arată-mi că ai minte, nu doar curaj.']],
+    final:['— Ia asta. E cald și iarna, și noaptea.','Îți pune în palmă o bucată de hartă și dispare în fum.'],
+    cadre:[{pana:6,scena:'mare',par:{paleta:'zori',tinta:'vulcan',tx:.7,crestere:true}},{pana:14,scena:'vulcan',par:{}}],
+    cadruFinal:{scena:'vulcan',par:{}},
+    probe:['ceas','balanta','lacat','socot','sir'],pool:['🔥','⚫','💨','⚡','🌋','💥']}
+};
+var CAT_PROBA={harta:'nav',coord:'nav',socot:'mat',ceas:'mat',ord:'mat',sir:'logic',balanta:'logic',poteci:'logic',lacat:'cod',cifru:'cod',mem:'mem'};
+var OBIECTE_GEN=[{ic:'🗝️',n:'Cheia de bronz'},{ic:'🏮',n:'Felinarul peșterii'},{ic:'🔪',n:'Maceta din junglă'},{ic:'🌙',n:'Perla Lunii'},{ic:'🔥',n:'Cristalul de foc'},
+  {ic:'🐚',n:'Scoica vorbitoare'},{ic:'🌿',n:'Pana verde'},{ic:'🧵',n:'Sfoara fermecată'},{ic:'🔔',n:'Clopoțelul de ceață'},{ic:'💠',n:'Oglinda mică'},{ic:'🍾',n:'Sticla cu mesaj'},{ic:'🎣',n:'Cârligul de argint'}];
+var COMORI_GEN=[{ic:'👑',n:'Coroana de scoici'},{ic:'🧭',n:'Busola de aur'},{ic:'🔱',n:'Tridentul de argint'},{ic:'💍',n:'Inelul căpitanului'},{ic:'🏺',n:'Amfora cu perle'},{ic:'📜',n:'Harta lumii întregi'},{ic:'🔮',n:'Globul de sticlă albastră'},{ic:'⚔️',n:'Sabia de paradă'}];
+var NUME_FINAL=['Insula Comorii','Insula Craniului','Insula Cufărului','Insula de la Capătul Hărții'];
+var FILM_FINAL={
+  intro:['Cele cinci bucăți de hartă se lipesc una de alta, cu un foșnet uscat.','Ceața se dă la o parte. Insula e chiar acolo, unde nu era nimic.','Cobori pe plajă. În nisip, pe jumătate îngropat: un lacăt uriaș de fier cu cinci cifre.'],
+  cufar:['Lacătul cade în nisip cu un pocnet sec. Ridici capacul greu...','Înăuntru, învelită în pânză veche, te așteaptă comoara acestei mări.'],
+  sfarsit:['Te așezi pe nisip și te uiți la mare. Ai trecut prin șase insule.','Ai citit hărți, ai socotit, ai ținut minte, ai gândit. Și nu te-ai lăsat păcălit.','Comoara e frumoasă. Dar mintea care a găsit-o e și mai valoroasă.']
+};
+var UN_PIRAT={n:'Un pirat necunoscut',e:'🏴‍☠️'}, UN_NEGUSTOR={n:'Un negustor gălăgios',e:'🎩'}, UN_BILET={n:'Un bilet găsit pe jos',e:'📜'};
+var CAPCANE=[
+  {cine:PESCARUS,q:'— Îți spun EXACT unde e comoara. Dă-mi toți dublonii tăi. ACUM! Oferta ține doar un minut!',
+    opt:[{x:'Îi dau toți dublonii. Dacă e așa grăbit, sigur spune adevărul.',v:'rau',dub:-5,fb:'Pescărușul înșfacă dublonii și zboară râzând: — E pe undeva! Cra-cra! Ai rămas cu 5 dubloni mai puțin și fără nicio informație.'},
+         {x:'Îl întreb: «De unde știi? Arată-mi o dovadă.»',v:'bun',dub:3,fb:'Pescărușul se bâlbâie, se uită în sus, în jos... și zboară fără un cuvânt. Găsești 3 dubloni scăpați din ciocul lui.'},
+         {x:'Spun politicos «Nu, mulțumesc» și îmi văd de drum.',v:'ok',dub:0,fb:'Alegere sigură — nu ai pierdut nimic. Data viitoare poți chiar să ceri o dovadă: uneori afli ceva folositor.'}],
+    invat:'Cine te grăbește («doar acum!», «ultima șansă!») și îți cere tot ce ai, de obicei vrea să te păcălească. Întreabă mereu: «De unde știi? Arată-mi dovada.» Adevărul nu se grăbește niciodată.'},
+  {cine:SIRENA,doc:{titlu:'ÎNȚELEGEREA SIRENEI',mare:'PRIMEȘTI 100 DE DUBLONI DE AUR!',mic:'Prin semnarea prezentei, semnatarul predă harta sa în întregime și se obligă să cânte pentru Sirena Maré, fără pauză, timp de 100 (una sută) de ani, pe stânca din dreptul recifului.'},
+    q:'Sirena îți întinde o hârtie și un pix de scoică. Rândul de sus e scris cu litere uriașe. Sub el e ceva mărunt, cât urma unui furnicar. Ce faci?',
+    opt:[{x:'Semnez repede! 100 de dubloni, ce mai stau pe gânduri?',v:'rau',dub:-6,fb:'Abia după ce semnezi citești rândul mărunt: harta ta și 100 de ani de cântat. Smulgi hârtia înapoi în ultima clipă. Ai scăpat — dar cu 6 dubloni «taxă de rupere».'},
+         {x:'Citesc mai întâi rândul scris mărunt.',v:'bun',dub:4,fb:'Rândul mărunt zice tot: harta ta plus 100 de ani de cântat pe stâncă. Refuzi politicos. Sirena râde cu poftă: — Îmi placi, piratule. Ține 4 dubloni pentru ochii tăi ageri.'},
+         {x:'Refuz din start, fără să citesc nimic.',v:'ok',dub:0,fb:'Ai fost prudent și nu ai pierdut nimic. Dar dacă citeai, aflai și DE CE era o capcană — iar asta te ajută data viitoare.'}],
+    invat:'Ofertele «prea bune ca să fie adevărate» ascund aproape mereu un rând scris mărunt. Citește TOT înainte să spui da — mai ales partea pe care cineva speră că nu o citești.'},
+  {cine:VANT,q:'Ajungi la o bifurcație. Pe o piatră e scrijelit cu litere uriașe: «REPEDE! POTECA DIN STÂNGA! NU PIERDE TIMPUL CITIND!» Ce faci?',
+    opt:[{x:'Fug pe poteca din stânga. Nu e timp de citit!',v:'rau',dub:-5,fb:'Poteca din stânga se termină brusc deasupra unei râpe. Te întorci din drum obosit și cu 5 dubloni scăpați pe jos, prin pietre.'},
+         {x:'Mă opresc și citesc și restul mesajului, mai jos pe piatră.',v:'bun',dub:4,fb:'Mai jos, cu litere mici: «...așa scrie oricine vrea să te păcălească. Poteca sigură e cea cu urme de pași.» Alegi poteca din dreapta, plină de urme, și ajungi teafăr.'},
+         {x:'Dau cu banul și aleg la întâmplare.',v:'ok',dub:0,fb:'Nimerești bine — dar din noroc curat. Norocul e plăcut, însă nu e un plan pe care să te bazezi.'}],
+    invat:'Când un mesaj țipă «REPEDE!» și îți spune să NU citești, exact atunci trebuie să citești mai atent. Graba e unealta preferată a celor care mint.'},
+  {cine:VANT,q:'— Vezi groapa aia întunecată? Cineva strigă din spate: «Sari în ea, e o scurtătură! TOȚI pirații adevărați sar. Ce, ți-e frică?»',
+    opt:[{x:'Sar. Nu vreau să creadă cineva că mi-e frică.',v:'rau',dub:-4,fb:'Cazi doi metri într-o baltă rece și noroioasă. Nicio scurtătură pe nicăieri. Te ridici ud, cu 4 dubloni pierduți în mâl — și puțin mai înțelept.'},
+         {x:'Arunc mai întâi o piatră, ca să aud cât e de adânc.',v:'bun',dub:3,fb:'Piatra face «plici» abia după două secunde lungi. E adânc și plin de mâl. Ocolești groapa pe margine, fluierând.'},
+         {x:'Nu sar și plec pe alt drum, fără să verific.',v:'ok',dub:0,fb:'Ai evitat pericolul, foarte bine. Data viitoare poți și să testezi — informația e o armă.'}],
+    invat:'«Toți fac asta» nu e niciodată un motiv bun. Și când vrei să afli dacă ceva e periculos, testează cu un lucru mic (o piatră) — nu cu tine.'},
+  {cine:UN_PIRAT,q:'— Psst! Dă-mi jumătate din dublonii tăi și îți spun parola cufărului. Toți ceilalți pirați au plătit deja!',
+    opt:[{x:'Plătesc. Dacă toți au plătit, înseamnă că e adevărat.',v:'rau',dub:-5,fb:'Parola era «abracadabra». Nu deschide nimic. Piratul a plecat de mult cu dublonii tăi.'},
+         {x:'Îl întreb: «Care pirați? Arată-mi unul.»',v:'bun',dub:3,fb:'Se uită în jur... nu e niciun alt pirat pe insulă. Pleacă bombănind. Găsești 3 dubloni scăpați din buzunarul lui.'},
+         {x:'Spun «nu» și merg mai departe.',v:'ok',dub:0,fb:'Nu ai pierdut nimic. Dar era bine să ceri o dovadă: uneori așa afli cine minte.'}],
+    invat:'«Toți au făcut asta» nu e o dovadă. Cere să vezi cu ochii tăi înainte să dai ceva.'},
+  {cine:UN_BILET,q:'Pe o piatră scrie: «Scurtătura sigură e prin peștera din dreapta. Semnat: un prieten.» Nu vezi niciun prieten prin preajmă.',
+    opt:[{x:'Iau scurtătura. Doar e semnată de un prieten.',v:'rau',dub:-4,fb:'Peștera se înfundă și te învârți o oră în întuneric. Ieși ud și cu 4 dubloni pierduți.'},
+         {x:'Verific mai întâi: arunc o piatră în peșteră și ascult.',v:'bun',dub:3,fb:'Piatra cade lung, într-o apă adâncă. Ocolești pe drumul cunoscut și ajungi teafăr, cu 3 dubloni găsiți pe potecă.'},
+         {x:'Merg pe drumul lung, pe care îl cunosc.',v:'ok',dub:0,fb:'Ajungi obosit, dar întreg. Data viitoare poți și să verifici scurtătura — cu o piatră, nu cu tine.'}],
+    invat:'Un mesaj semnat «un prieten» de cineva pe care nu-l vezi nu e de la un prieten. Verifică înainte să te încrezi.'},
+  {cine:UN_NEGUSTOR,q:'— Busolă fermecată! Arată mereu spre comoară! Doar 8 dubloni, și azi e ULTIMA zi!',
+    opt:[{x:'Cumpăr! O busolă spre comoară merită orice.',v:'rau',dub:-8,fb:'Busola arată spre nord, ca orice busolă. «Fermecată» era doar cuvântul de pe cutie. Minus 8 dubloni.'},
+         {x:'Îi cer să-mi arate cum funcționează, înainte să plătesc.',v:'bun',dub:2,fb:'Negustorul învârte busola, se înroșește și schimbă subiectul. Pleci cu dublonii tăi și cu 2 în plus, găsiți sub tarabă.'},
+         {x:'Nu cumpăr nimic de la cineva care strigă.',v:'ok',dub:0,fb:'Ai fost prudent. Dar putea să fie și un lucru bun — ca să afli, cere o probă.'}],
+    invat:'«Ultima zi» și «fermecat» sunt cuvinte care vând. Cere o probă. Dacă lucrul e bun, o să-ți arate.'},
+  {cine:UN_BILET,q:'Găsești un bilet: «Ai câștigat un cufăr cu aur! Ca să-l primești, scrie aici numele corabiei tale și unde îți ții dublonii.»',
+    opt:[{x:'Scriu tot. Un cufăr cu aur!',v:'rau',dub:-6,fb:'Noaptea, cineva îți golește ascunzătoarea. Biletul era o capcană ca să afle unde ții dublonii. Minus 6.'},
+         {x:'Nu scriu nimic. Nimeni nu dă aur pe gratis, iar unde îmi țin dublonii e secretul meu.',v:'bun',dub:3,fb:'Rupi biletul în două. Un crab aplaudă cu cleștii și îți scoate din nisip 3 dubloni.'},
+         {x:'Scriu un nume fals și un loc fals.',v:'ok',dub:0,fb:'Ai scăpat. Dar mai simplu era să nu răspunzi deloc: cu mincinoșii nu te joci.'}],
+    invat:'Când cineva îți promite un premiu și cere în schimb secretele tale, e o capcană. Secretele nu se dau nimănui.'},
+  {cine:VANT,q:'Doi pirați se ceartă lângă două bărci. Unul strigă: «Ia barca mea, e mai rapidă!» Celălalt: «Nu, a mea!» Amândoi vor să plătești înainte.',
+    opt:[{x:'Plătesc celui care strigă mai tare.',v:'rau',dub:-5,fb:'Barca lui are o gaură cât pumnul. Te întorci înot, cu 5 dubloni mai puțin.'},
+         {x:'Mă uit la amândouă bărcile înainte să aleg.',v:'bun',dub:2,fb:'Una are o gaură în fund. Cealaltă e bună. Alegi cu ochii, nu cu urechile — și găsești 2 dubloni sub bancheta bărcii.'},
+         {x:'Nu iau nicio barcă. Merg pe jos, pe mal.',v:'ok',dub:0,fb:'Drum lung, dar sigur. Data viitoare, uită-te la ce ți se oferă: una dintre bărci chiar era bună.'}],
+    invat:'Cine strigă mai tare nu are neapărat dreptate. Uită-te cu ochii tăi, apoi alege.'}
+];
+
+/* ——— generatoare de probe: întorc pași cu bază (Mus) și „cap" (Căpitan) ——— */
+var DIR={N:[0,-1],S:[0,1],E:[1,0],V:[-1,0]}, DIR_NUME={N:'NORD',S:'SUD',E:'EST',V:'VEST'};
+function drumHarta(r,n,pasi){
+  var cols='ABCDE'.slice(0,n).split(''), tot=n*n;
+  for(var inc=0;inc<200;inc++){
+    var c=intre(r,0,n-1), rd=intre(r,1,n), sc=c, sr=rd, linii=[], ok=true, vizitate={};
+    var dirs=amestecaR(r,['N','S','E','V']);
+    for(var i=0;i<pasi;i++){
+      var d=dirs[i%dirs.length], k=intre(r,1,Math.min(3,n-2));
+      var nc=c+DIR[d][0]*k, nr=rd+DIR[d][1]*k;
+      if(nc<0||nc>=n||nr<1||nr>n){ ok=false; break; }
+      c=nc; rd=nr; linii.push(plural(k,'pas','pași')+' spre '+DIR_NUME[d]);
+    }
+    if(!ok||(c===sc&&rd===sr)) continue;
+    var plecare=cols[sc]+sr, ras=cols[c]+rd, marci={}, sem=['🌊','🐚','⚫','🦀'];
+    for(var m=0;m<2;m++){ var id=cols[intre(r,0,n-1)]+intre(r,1,n); if(id!==plecare&&id!==ras) marci[id]=sem[m]; }
+    return {cols:cols,rows:n,plecare:plecare,marci:marci,ras:ras,tabla:['🌴 Pornești de la PALMIER'].concat(linii)};
+  }
+  return {cols:cols,rows:n,plecare:cols[0]+'1',marci:{},ras:cols[1]+'1',tabla:['🌴 Pornești de la PALMIER','1 pas spre EST']};
+}
+function genHarta(r,g){
+  var T=GEN_TXT.harta, a=drumHarta(r,4,2), b=drumHarta(r,5,3);
+  return {t:'harta',cat:'nav',cine:g,q:T.q,hint:T.hint,invat:T.invat,
+    cols:a.cols,rows:a.rows,plecare:a.plecare,marci:a.marci,ras:a.ras,tabla:a.tabla,
+    cap:{cols:b.cols,rows:b.rows,plecare:b.plecare,marci:b.marci,ras:b.ras,tabla:b.tabla}};
+}
+function genCoord(r,g){
+  var T=GEN_TXT.coord, cols=['A','B','C','D'], ci=intre(r,0,3), rd=intre(r,1,4);
+  var colsC=['A','B','C','D','E'], ciC=intre(r,0,4), rdC=intre(r,2,5), a=intre(r,1,rdC-1), b=rdC-a;
+  var marci={}, marciC={}, sem=['🐬','🐠','🐚'];
+  for(var m=0;m<2;m++){ var id=cols[intre(r,0,3)]+intre(r,1,4); if(id!==cols[ci]+rd) marci[id]=sem[m]; }
+  for(m=0;m<3;m++){ id=colsC[intre(r,0,4)]+intre(r,1,5); if(id!==colsC[ciC]+rdC) marciC[id]=sem[m]; }
+  return {t:'harta',cat:'nav',cine:g,q:T.q,hint:T.hint,invat:T.invat,
+    cols:cols,rows:4,marci:marci,ras:cols[ci]+rd,tabla:['Coloana '+cols[ci]+' · Rândul '+rd],
+    cap:{cols:colsC,rows:5,marci:marciC,ras:colsC[ciC]+rdC,hint:T.hintCap,
+      tabla:['Coloana: '+ORDINAL[ciC]+' literă din alfabet','Rândul: '+a+' + '+b]}};
+}
+function nuci(n){ return plural(n,'nucă','nuci'); }
+function genSocot(r,g){
+  var T=GEN_TXT.socot, a,b,c,d,txt,rasp,unit;
+  switch(intre(r,0,3)){
+    case 0: a=intre(r,2,3); b=intre(r,2,5); c=intre(r,1,a*b-1); rasp=a*b-c; unit=nuci;
+      txt='Pe '+a+' palmieri sunt câte '+b+' nuci de cocos. O maimuță fură '+c+'. Câte nuci au mai rămas?'; break;
+    case 1: a=intre(r,3,9); b=intre(r,2,9); rasp=a+b; unit=function(n){ return plural(n,'scoică','scoici'); };
+      txt='Ai '+a+' scoici. Găsești încă '+b+'. Câte scoici ai acum?'; break;
+    case 2: a=intre(r,8,20); b=intre(r,2,a-1); rasp=a-b; unit=function(n){ return plural(n,'dublon','dubloni'); };
+      txt='În cufăr sunt '+plural(a,'dublon','dubloni')+'. Cheltuiești '+b+'. Câți dubloni rămân?'; break;
+    default: b=intre(r,2,3); a=b*intre(r,2,6); rasp=a/b; unit=function(n){ return plural(n,'banană','banane'); };
+      txt=(b===2?'Două':'Trei')+' maimuțe împart '+a+' banane în mod egal. Câte banane primește fiecare?';
+  }
+  var C={};
+  switch(intre(r,0,3)){
+    case 0: a=intre(r,2,5); b=intre(r,4,9); c=intre(r,2,9); d=intre(r,1,5); if(c+d>=a*b){ c=2; d=1; } C.rasp=a*b-c-d; C.unit=nuci;
+      C.txt='Pe '+a+' palmieri sunt câte '+b+' nuci. Maimuțele fură '+c+', iar alte '+d+' cad în apă. Câte nuci au mai rămas?'; break;
+    case 1: c=intre(r,3,6); d=intre(r,3,9); b=intre(r,5,15); a=b+c*d; C.rasp=d; C.unit=function(n){ return plural(n,'dublon','dubloni'); };
+      C.txt='Ai '+plural(a,'dublon','dubloni')+'. Pui '+b+' deoparte pentru reparat corabia, iar restul îi împarți egal la '+c+' marinari. Câți dubloni primește un marinar?'; break;
+    case 2: a=4*intre(r,3,9); C.rasp=a-a/4; C.unit=function(n){ return plural(n,'perlă','perle'); };
+      C.txt='Ai '+plural(a,'perlă','perle')+'. Dai un SFERT din ele sirenei. Câte perle îți rămân?'; break;
+    default: a=intre(r,3,9); b=intre(r,3,9); C.rasp=a*b; C.unit=function(n){ return plural(n,'sticlă','sticle'); };
+      C.txt='În cală sunt '+a+' lăzi cu câte '+b+' sticle. Câte sticle sunt în total?';
+  }
+  return {t:'alege',cat:'mat',cine:g,q:T.q,hint:T.hint,invat:T.invat,tabla:[txt],opt:optiuni(r,rasp,unit),
+    cap:{tabla:[C.txt],opt:optiuni(r,C.rasp,C.unit)}};
+}
+function genSir(r,g){
+  var T=GEN_TXT.sir, s=intre(r,1,3), a=intre(r,1,6), l=[a,a+s,a+2*s,a+3*s], rasp=a+4*s;
+  var tip=intre(r,0,2), C={};
+  if(tip===0){ var p=intre(r,2,7), b=intre(r,2,9); C.l=[b,b+p,b+2*p,b+3*p]; C.rasp=b+4*p; C.alte=[b+5*p,b+3*p+p+1]; }
+  else if(tip===1){ b=intre(r,2,4); C.l=[b,b*2,b*4,b*8]; C.rasp=b*16; C.alte=[b*8+b,b*8+8,b*12]; }
+  else { p=intre(r,3,9); b=60+intre(r,0,30); C.l=[b,b-p,b-2*p,b-3*p]; C.rasp=b-4*p; C.alte=[b-3*p-p-1,b-5*p]; }
+  return {t:'alege',cat:'logic',cine:g,q:T.q,hint:T.hint,invat:T.invat,tabla:[l.join(', ')+', ...'],opt:optiuni(r,rasp,null,[a+3*s+s+1,a+5*s]),
+    cap:{tabla:[C.l.join(', ')+', ...'],opt:optiuni(r,C.rasp,null,C.alte),hint:T.hintCap}};
+}
+function regulaCifra(r,c,greu){
+  var f=intre(r,0,greu?3:1);
+  if(f===0&&GHICI_CIFRA[c]!==undefined&&r()<.5) return GHICI_CIFRA[c];
+  if(f<=1){ if(r()<.5&&c>=2){ var a=intre(r,1,c-1); return a+' + '+(c-a); } var b=intre(r,c+1,9); return b+' − '+(b-c); }
+  if(f===2&&c>=2&&c<=8){ var d=[[2,1],[2,2],[2,3],[2,4],[3,2],[3,3]].filter(function(p){ return p[0]*p[1]===c; }); if(d.length){ var e=dintre(r,d); return e[0]+' × '+e[1]; } }
+  var m=intre(r,2,4); return (c*m)+' : '+m;
+}
+function genLacat(r,g){
+  var T=GEN_TXT.lacat, cif=[intre(r,1,9),intre(r,0,9)], cifC=[intre(r,1,9),intre(r,0,9),intre(r,0,9)];
+  var tabla=cif.map(function(c,i){ return (i===0?'Prima cifră':'A doua cifră')+' = '+regulaCifra(r,c,false); });
+  var tablaC=cifC.map(function(c,i){ return (i===0?'Prima cifră':(i===1?'A doua':'A treia'))+' = '+regulaCifra(r,c,true); });
+  return {t:'cod',cat:'cod',cine:g,mod:'cifre',q:T.q,hint:T.hint,invat:T.invat,ras:cif.join(''),tabla:tabla,
+    cap:{ras:cifC.join(''),tabla:tablaC}};
+}
+var CUVINTE_MUS=['MARE','VANT','AUR','LUNA','APA','NAVA','VAL','RAC','FOC','SARE'];
+var CUVINTE_CAP=['COMOARA','CUFAR','PIRAT','BARCA','HARTA','ANCORA','BUSOLA','PAPAGAL','SIRENA','VELA'];
+function cifruPentru(r,cuv){
+  var lit=[], i; for(i=0;i<cuv.length;i++) if(lit.indexOf(cuv[i])<0) lit.push(cuv[i]);
+  var extra=amestecaR(r,'ABCDEFGHILMNOPRSTUV'.split('').filter(function(c){ return lit.indexOf(c)<0; })).slice(0,2);
+  var pool=lit.concat(extra).sort(), cifre=amestecaR(r,[1,2,3,4,5,6,7,8,9]).slice(0,pool.length), map={};
+  var cifru=pool.map(function(c,i){ map[c]=cifre[i]; return [c,cifre[i]]; });
+  var sir=[]; for(i=0;i<cuv.length;i++) sir.push(map[cuv[i]]);
+  return {cifru:cifru,pool:pool,ras:cuv,tabla:[sir.join(' — ')]};
+}
+function genCifru(r,g){
+  var T=GEN_TXT.cifru, a=cifruPentru(r,dintre(r,CUVINTE_MUS)), b=cifruPentru(r,dintre(r,CUVINTE_CAP));
+  return {t:'cod',cat:'cod',cine:g,mod:'litere',q:T.q,hint:T.hint,invat:T.invat,cifru:a.cifru,pool:a.pool,ras:a.ras,tabla:a.tabla,
+    cap:{cifru:b.cifru,pool:b.pool,ras:b.ras,tabla:b.tabla}};
+}
+function genMem(r,g,pool){
+  var T=GEN_TXT.mem;
+  return {t:'memorie',cat:'mem',cine:g,q:T.q,hint:T.hint,invat:T.invat,pool:pool.slice(0,4),lung:3,cap:{pool:pool,lung:5}};
+}
+function numereDistincte(r,n,max){ var v=[]; while(v.length<n){ var x=intre(r,1,max); if(v.indexOf(x)<0) v.push(x); } return v; }
+function genOrd(r,g){
+  var T=GEN_TXT.ord;
+  return {t:'ordine',cat:'mat',cine:g,q:T.q,hint:T.hint,invat:T.invat,items:numereDistincte(r,4,20),cap:{items:numereDistincte(r,6,50)}};
+}
+function ore(n){ return n===1?'1 oră':n+' ore'; }
+function minute(n){ return n<20?n+' minute':n+' de minute'; }
+function genCeas(r,g){
+  var T=GEN_TXT.ceas, h=intre(r,1,9), d=intre(r,1,3);
+  var hC=intre(r,9,16), mC=5*intre(r,0,11), dC=5*intre(r,3,17), tot=hC*60+mC+dC, h2=Math.floor(tot/60), m2=tot%60;
+  return {t:'alege',cat:'mat',cine:g,q:T.q,hint:T.hint,invat:T.invat,ceas:{h:h,m:0},tabla:['Corabia pleacă la ora '+(h+d)],opt:optiuni(r,d,ore,[h+d,d+2]),
+    cap:{ceas:{h:hC%12,m:mC},tabla:['Corabia pleacă la '+h2+':'+(m2<10?'0':'')+m2],opt:optiuni(r,dC,minute,[dC+10,dC-10,dC+5,dC+60]),hint:T.hintCap}};
+}
+function pietreMici(n){ return n+' pietre mici'; }
+function genBalanta(r,g){
+  var T=GEN_TXT.balanta, k=intre(r,2,3), n=intre(r,2,4);
+  var kC=intre(r,2,3), mC=kC*intre(r,2,4), nC=intre(r,3,6);
+  return {t:'alege',cat:'logic',cine:g,q:T.q,hint:T.hint,invat:T.invat,
+    tabla:['1 piatră MARE = '+k+' pietre mici','Câte pietre mici cântăresc cât '+n+' pietre mari?'],opt:optiuni(r,n*k,pietreMici,[n+k,n*k+k]),
+    cap:{tabla:[kC+' pietre MARI = '+mC+' pietre mici','Câte pietre mici cântăresc cât '+nC+' pietre mari?'],opt:optiuni(r,nC*mC/kC,pietreMici,[nC*mC,nC+mC,nC*kC])}};
+}
+var CONDITII=[
+  {t:'tot atâtea pietre câte degete are o mână',f:function(n){ return n===5; }},
+  {t:'un număr PAR de pietre',f:function(n){ return n%2===0; }},
+  {t:'un număr IMPAR de pietre',f:function(n){ return n%2===1; }},
+  {t:'mai mult de 6 pietre',f:function(n){ return n>6; }},
+  {t:'mai puțin de 4 pietre',f:function(n){ return n<4; }},
+  {t:'tot atâtea pietre câte zile are o săptămână',f:function(n){ return n===7; }}
+];
+var CONDITII_CAP=[
+  {t:'un număr de pietre care este PAR și mai MARE decât 4',f:function(n){ return n%2===0&&n>4; }},
+  {t:'un număr de pietre care este IMPAR și mai MIC decât 6',f:function(n){ return n%2===1&&n<6; }},
+  {t:'un număr de pietre mai MARE decât 3 și mai MIC decât 7',f:function(n){ return n>3&&n<7; }},
+  {t:'un număr PAR de pietre, dar NU 4',f:function(n){ return n%2===0&&n!==4; }},
+  {t:'un număr de pietre care se împarte exact la 3',f:function(n){ return n%3===0; }}
+];
+function poteci(r,cond){
+  for(var inc=0;inc<300;inc++){
+    var n=numereDistincte(r,3,9), bune=n.filter(cond.f);
+    if(bune.length!==1) continue;
+    var lit=['A','B','C'];
+    return n.map(function(k,i){ var p='', j; for(j=0;j<k;j++) p+='⚫'; return {x:'Poteca '+lit[i]+' — '+k+' pietre '+p,ok:cond.f(k)}; });
+  }
+  return [{x:'Poteca A — 5 pietre ⚫⚫⚫⚫⚫',ok:true},{x:'Poteca B — 3 pietre ⚫⚫⚫'},{x:'Poteca C — 8 pietre ⚫⚫⚫⚫⚫⚫⚫⚫'}];
+}
+function genPoteci(r,g){
+  var T=GEN_TXT.poteci, c=dintre(r,CONDITII), cC=dintre(r,CONDITII_CAP);
+  return {t:'alege',cat:'logic',cine:g,q:T.q,hint:T.hint,invat:T.invat,tabla:['«Poteca sigură are '+c.t+'.»'],opt:poteci(r,c),
+    cap:{tabla:['«Poteca sigură are '+cC.t+'.»'],opt:poteci(r,cC),invat:T.invatCap}};
+}
+var GENERATOARE={harta:genHarta,coord:genCoord,socot:genSocot,sir:genSir,lacat:genLacat,cifru:genCifru,mem:genMem,ord:genOrd,ceas:genCeas,balanta:genBalanta,poteci:genPoteci};
+
+function filmIntroGen(B,g,var_){
+  var rep=B.intro[var_], act=[];
+  if(g.p) act.push({p:g.p,sol:g.p==='pustnic'||g.p==='negustor',t0:9.5,t1:11.5,from:[1.1,.5],to:[.64,.48],s:g.p==='sirena'?160:(g.p==='pustnic'?168:126),arc:g.p==='papagal'?.12:0,inclina:g.p==='papagal'});
+  else act.push({e:g.e,t0:9.5,t1:11.5,from:[1.1,.5],to:[.66,.5],s:110,arc:.1});
+  return {t:'film',dur:14,cadre:B.cadre,replici:[{t:0,cine:VANT,x:rep[0]},{t:5,cine:VANT,x:rep[1]},{t:9.5,cine:g,x:rep[2]}],actori:act};
+}
+function filmFinalGen(B,g){
+  return {t:'film',dur:8,cadre:[{pana:8,scena:B.cadruFinal.scena,par:B.cadruFinal.par}],
+    replici:[{t:0,cine:g,x:B.final[0]},{t:4,cine:VANT,x:B.final[1]}],
+    actori:[{p:'harta',t0:4,t1:5.6,from:[.5,.7],to:[.5,.54],s:104}]};
+}
+function capcanaGen(r,folosite){
+  var libere=[]; for(var i=0;i<CAPCANE.length;i++) if(folosite.indexOf(i)<0) libere.push(i);
+  var k=dintre(r,libere); folosite.push(k);
+  var c=CAPCANE[k], p={t:'decizie',cat:'capcana',cine:c.cine,q:c.q,opt:c.opt,invat:c.invat}; if(c.doc) p.doc=c.doc;
+  return p;
+}
+function genLume(k){
+  var r=rngNou(1000+k*7919), ins=[], folosite=[], obiecte=amestecaR(r,OBIECTE_GEN).slice(0,5), pozitii=amestecaR(r,[1,2,3,4,5]);
+  var biomuri=amestecaR(r,['plaja','pestera','jungla','recif','vulcan']), xs=[12,28,45,62,78,91], ys=[70,32,72,30,66,24], cod='';
+  var cifre=[]; for(var i=0;i<5;i++) cifre.push(intre(r,1,9));
+  for(i=0;i<5;i++){
+    var B=BIOMURI[biomuri[i]], g=dintre(r,B.gardieni), probe=amestecaR(r,B.probe).slice(0,3), pasi=[];
+    for(var j=0;j<3;j++) pasi.push(GENERATOARE[probe[j]](r,g,B.pool));
+    pasi.splice(intre(r,1,3),0,capcanaGen(r,folosite));
+    ins.push({nume:dintre(r,B.nume),e:B.e,x:xs[i]+intre(r,-3,3),y:ys[i]+intre(r,-4,4),
+      intro:[filmIntroGen(B,g,intre(r,0,B.intro.length-1))],pasi:pasi,obiect:obiecte[i],
+      indiciu:{poz:pozitii[i],cif:cifre[i],text:'Cifra '+cifre[i]+' stă pe poziția '+pozitii[i]+' a lacătului final.'},
+      final:[filmFinalGen(B,g)]});
+  }
+  for(i=1;i<=5;i++) cod+=cifre[pozitii.indexOf(i)];
+  var TF=GEN_TXT.lacatFinal;
+  ins.push({nume:dintre(r,NUME_FINAL),e:'💎',x:91,y:24,
+    intro:[{t:'film',dur:14,cadre:[{pana:6,scena:'harta',par:{}},{pana:14,scena:'craniu',par:{paleta:'apus'}}],
+      replici:[{t:0,cine:VANT,x:FILM_FINAL.intro[0]},{t:5,cine:VANT,x:FILM_FINAL.intro[1]},{t:9.5,cine:VANT,x:FILM_FINAL.intro[2]}]}],
+    pasi:[
+      {t:'cod',cat:'cod',cine:VANT,mod:'cifre',jurnal:true,q:TF.q,ras:cod,hint:TF.hint,invat:TF.invat},
+      {t:'film',dur:9,cadre:[{pana:9,scena:'craniu',par:{paleta:'apus',cufar:true}}],
+        replici:[{t:0,cine:VANT,x:FILM_FINAL.cufar[0]},{t:4.5,cine:VANT,x:FILM_FINAL.cufar[1]}]},
+      capcanaGen(r,folosite),
+      {t:'film',dur:14,cadre:[{pana:14,scena:'apus',par:{}}],
+        replici:[{t:0,cine:VANT,x:FILM_FINAL.sfarsit[0]},{t:4.5,cine:VANT,x:FILM_FINAL.sfarsit[1]},{t:9.5,cine:VANT,x:FILM_FINAL.sfarsit[2]}]}],
+    obiect:dintre(r,COMORI_GEN),indiciu:null,final:[]});
+  return ins;
+}
+var LUMI_CACHE={};
+function lumea(k){ if(!k) return LUMEA1; if(!LUMI_CACHE[k]) LUMI_CACHE[k]=genLume(k); return LUMI_CACHE[k]; }
+function numeLume(k){ return k?NUME_LUMI[k-1]:'Mările Uitate'; }
+function emojiLume(k){ return k?EMOJI_LUMI[(k*7)%EMOJI_LUMI.length]:'🗺️'; }
 
 /* ═══════════ STARE ═══════════ */
 var CHEIE='comoara-piratului-v2';
 var S,A={},GEN=0;
 
-function stareNoua(){
-  return {nume:'',av:'🏴‍☠️',niv:'mus',ins:0,p:0,dub:10,
-    obiecte:[],indicii:[],gata:[],ecran:'intro',sunet:true,voce:true,vociNume:'',
-    start:Date.now(),
+/* progresul dintr-o lume: stă pe S cât timp lumea e deschisă și se copiază în S.prog[lume] la salvare */
+var CHEI_PROG=['ins','p','obiecte','indicii','gata','start','st'];
+function progNou(){
+  return {ins:0,p:0,obiecte:[],indicii:[],gata:[],start:Date.now(),
     st:{nav:{t:0,ok:0},mat:{t:0,ok:0},cod:{t:0,ok:0},mem:{t:0,ok:0},logic:{t:0,ok:0},capcana:{t:0,ok:0}}};
 }
-function salveaza(){ try{ localStorage.setItem(CHEIE,JSON.stringify(S)); }catch(e){} }
-function incarca(){ try{ var b=localStorage.getItem(CHEIE); return b?JSON.parse(b):null; }catch(e){ return null; } }
+function stareNoua(){
+  var s={nume:'',av:'🏴‍☠️',niv:'mus',lume:0,prog:{},dub:10,ecran:'intro',sunet:true,voce:true,vociNume:''};
+  var q=progNou(); for(var k in q) s[k]=q[k];
+  return s;
+}
+function stocheazaProg(){ var q={}; for(var i=0;i<CHEI_PROG.length;i++) q[CHEI_PROG[i]]=S[CHEI_PROG[i]]; S.prog[S.lume]=q; }
+function deschideLume(k){
+  stocheazaProg();
+  S.lume=k; var q=S.prog[k]||progNou();
+  for(var i=0;i<CHEI_PROG.length;i++) S[CHEI_PROG[i]]=q[CHEI_PROG[i]];
+  INSULE=lumea(k);
+}
+function progresLume(k){ var q=k===S.lume?S:S.prog[k]; return q&&q.gata?q.gata.length:0; }
+function areProgres(s){
+  if(s.gata.length||s.ins>0||s.p>0||s.lume>0) return true;
+  for(var k in s.prog) if(s.prog[k].gata.length) return true;
+  return false;
+}
+function salveaza(){ try{ stocheazaProg(); localStorage.setItem(CHEIE,JSON.stringify(S)); }catch(e){} }
+function incarca(){
+  try{
+    var b=localStorage.getItem(CHEIE); if(!b) return null;
+    var s=JSON.parse(b);
+    if(s.lume===undefined){ s.lume=0; s.prog={}; }
+    return s;
+  }catch(e){ return null; }
+}
 function stergeSalvare(){ try{ localStorage.removeItem(CHEIE); }catch(e){} }
 
 /* ═══════════ SUNET ═══════════ */
@@ -799,7 +1232,7 @@ var NAR_FIXE={
 };
 function textPrimit(n){ return 'Ai primit '+n+'.'; }
 /* cheile din datele poveștii care se citesc cu voce tare ('x' doar în replici) */
-var NAR_CHEI={q:1,hint:1,invat:1,fb:1,text:1};
+var NAR_CHEI={q:1,hint:1,invat:1,fb:1,text:1,voce:1};
 function texteDin(o,spus,parinte,acc){
   acc=acc||[];
   if(o==null) return acc;
@@ -977,6 +1410,7 @@ function bara(){
     '<div class="medalion">'+S.av+'</div><div class="nume">'+E(S.nume||'Matelot')+'</div>'+
     '<div class="spatiu"></div>'+
     '<div class="contor">🪙 '+S.dub+'</div>'+
+    (S.ecran==='setup'?'':'<button class="mic-btn" onclick="mergiLa(\'lumi\')" title="Alege altă lume">🌍<span class="cuv"> Lumi</span></button>')+
     '<button class="mic-btn" onclick="jurnal()" title="Jurnalul de bord">📖<span class="cuv"> Jurnal</span></button>'+
     '<button class="mic-btn'+(S.voce?' pornit':'')+'" onclick="fereastraVoce()" title="Naratoarea">🎙️<span class="cuv"> Voce</span></button>'+
     '<button class="mic-btn" onclick="comutaSunet()" title="Sunetul jocului" aria-label="Sunet">'+(S.sunet?'🔊':'🔇')+'</button>'+
@@ -1029,7 +1463,7 @@ var TEXT_PROLOG='Dacă citești asta, înseamnă că ești destul de curajos. Co
 function ecranIntro(){
   var salv=incarca(), reia='';
   preincarca(TEXT_PROLOG);
-  if(salv&&salv.nume&&(salv.gata.length||salv.ins>0||salv.p>0))
+  if(salv&&salv.nume&&areProgres(salv))
     reia='<button class="buton linistit" onclick="reia()">⚓ Continuă cu '+E(salv.nume)+'</button>';
   var corp=
     '<div><div class="eticheta">Jurnal de bord · 1723</div>'+
@@ -1038,12 +1472,12 @@ function ecranIntro(){
     '<p>Bunicul tău, bătrânul căpitan <b>Barbă-Sură</b>, a plecat pe mare acum mulți ani și nu s-a mai întors niciodată.</p>'+
     '<p>Ieri, în podul casei, ai găsit un cufăr prăfuit. Înăuntru: o hartă ruptă în cinci bucăți, un compas ruginit și un bilet îngălbenit.</p>'+
     '<div class="verdict info"><span class="sm">🧔</span><div><b>Biletul căpitanului</b>'+TEXT_PROLOG+'</div></div>'+
-    '<p class="mica">Joc pentru clasele 1–4 · orientare, matematică, citire, logică, memorie și gândire critică. Poveștile sunt secvențe animate, cu naratoare.</p>';
+    '<p class="mica">Joc pentru clasele 1–4 · orientare, matematică, citire, logică, memorie și gândire critică. '+NR_LUMI+' de lumi, fiecare cu șase insule. Poveștile sunt secvențe animate, cu naratoare.</p>';
   var pod='<button class="buton" onclick="mergiLa(\'setup\')">🏴‍☠️ Pornesc în larg</button>'+reia+
     '<button class="buton linistit" onclick="spune(TEXT_PROLOG)" title="Citește biletul cu voce tare">🔊 Citește-mi</button>';
   return foaie('',corp,pod);
 }
-function reia(){ var s=incarca(); if(s){ S=s; if(S.ecran==='joc') intraPas(); else if(S.ecran==='intro') S.ecran='chart'; incarcaVoci(); render(); } }
+function reia(){ var s=incarca(); if(s){ S=s; INSULE=lumea(S.lume); if(S.ecran==='joc') intraPas(); else if(S.ecran==='intro') S.ecran='chart'; incarcaVoci(); render(); } }
 
 /* ═══════════ ECHIPAJ ═══════════ */
 var AVATARE=['🏴‍☠️','🦜','🐙','🦈','🧭','⚓','🐢','🦀'];
@@ -1087,7 +1521,7 @@ function ecranHarta(){
   }).join('');
   var pozC=INSULE[urm];
   var cap='<div class="sus"><div>'+
-      '<div class="eticheta">Harta Mărilor Uitate</div>'+
+      '<div class="eticheta">Lumea '+(S.lume+1)+' · '+E(numeLume(S.lume))+'</div>'+
       '<h2 class="titlu" style="font-size:clamp(1rem,2.6vh,1.45rem)">'+(S.gata.length>=INSULE.length?'Toate insulele explorate':'Escala următoare: '+E(INSULE[urm].nume))+'</h2>'+
     '</div><div class="tag">'+S.gata.length+' / '+INSULE.length+' insule</div></div>'+
     '<div class="bara" style="margin-top:7px"><i style="width:'+Math.round(S.gata.length/INSULE.length*100)+'%"></i></div>';
@@ -1100,12 +1534,33 @@ function ecranHarta(){
   var pod=(S.gata.indexOf(INSULE.length-1)<0
       ?'<button class="buton" onclick="intraInsula('+urm+')">'+INSULE[urm].e+' Debarcă pe '+E(INSULE[urm].nume)+'</button>'
       :'<button class="buton" onclick="mergiLa(\'final\')">💎 Vezi diploma</button>')+
+    '<button class="buton linistit" onclick="mergiLa(\'lumi\')">🌍 Altă lume</button>'+
     '<button class="buton linistit" onclick="jurnal()">📖 Jurnalul</button>';
   return foaie(cap,corp,pod,'plin');
 }
 
+/* ═══════════ LUMILE ═══════════ */
+function ecranLumi(){
+  var gata=0, carti='';
+  for(var k=0;k<NR_LUMI;k++){
+    var n=progresLume(k), tot=lumea(k).length, plin=n>=tot;
+    if(plin) gata++;
+    carti+='<button class="lume'+(k===S.lume?' acum':(plin?' gata':''))+'" onclick="alegeLume('+k+')">'+
+      '<span class="ic">'+emojiLume(k)+'</span><span class="nr">Lumea '+(k+1)+(plin?' · ✅':'')+'</span><b>'+E(numeLume(k))+'</b>'+
+      '<span class="bara"><i style="width:'+Math.round(n/tot*100)+'%"></i></span></button>';
+  }
+  var cap='<div class="sus"><div><div class="eticheta">Atlasul mărilor</div>'+
+      '<h2 class="titlu" style="font-size:clamp(1rem,2.6vh,1.45rem)">Alege lumea în care navighezi</h2></div>'+
+    '<div class="tag">'+gata+' / '+NR_LUMI+' lumi</div></div>'+
+    '<p class="mica">Orice lume se poate deschide oricând. În fiecare, insulele se joacă pe rând, iar ultima cere cifrele adunate de pe celelalte.</p>';
+  var pod='<button class="buton" onclick="mergiLa(\'chart\')">⚓ Înapoi la '+E(numeLume(S.lume))+'</button>'+
+    '<button class="buton linistit" onclick="jurnal()">📖 Jurnalul</button>';
+  return foaie(cap,'<div class="lumi">'+carti+'</div>',pod);
+}
+function alegeLume(k){ taci(); deschideLume(k); S.ecran='chart'; sClic(); salveaza(); render(); }
+
 /* ═══════════ MOTORUL ═══════════ */
-function mergiLa(e){ taci(); S.ecran=e; salveaza(); render(); }
+function mergiLa(e){ taci(); if(typeof opresteAmb==='function') opresteAmb(); S.ecran=e; salveaza(); render(); }
 function intraInsula(k){
   if(!deblocata(k)) return;
   S.ins=k; S.p=0; S.ecran='joc'; sClic(); intraPas(); salveaza(); render();
@@ -1185,7 +1640,7 @@ function ecranJoc(){
   var p=A.pas;
   if(!p) return foaie('','<p>...</p>','');
   var I=INSULE[S.ins];
-  var cap='<div class="sus"><div class="eticheta">Insula '+(S.ins+1)+'/'+INSULE.length+' · '+E(I.nume)+'</div>'+
+  var cap='<div class="sus"><div class="eticheta">Lumea '+(S.lume+1)+' · Insula '+(S.ins+1)+'/'+INSULE.length+' · '+E(I.nume)+'</div>'+
     '<div class="tag">'+I.e+' '+(S.niv==='mus'?'Mus':'Căpitan')+'</div></div>';
   if(p.t==='film') return ecranFilm(p,cap);
   var z;
@@ -1203,6 +1658,11 @@ function partStory(p){
   return {c:vorbitor(p.cine,(p.text||[]).map(function(t){ return '<p>'+E(t)+'</p>'; }).join('')),
           p:'<button class="buton" onclick="inainte()">Continuă ⚓</button>'};
 }
+/* tăblița: datele probei care se citesc cu ochii, nu cu vocea */
+function tabla(p){
+  if(!p.tabla||!p.tabla.length) return '';
+  return '<div class="tabla"><span class="mica">📋 Pe tăbliță scrie:</span>'+p.tabla.map(function(l){ return '<div>'+E(l)+'</div>'; }).join('')+'</div>';
+}
 function partAlege(p){
   var lit=['A','B','C','D'];
   var but=A.opt.map(function(o,i){
@@ -1213,7 +1673,7 @@ function partAlege(p){
       '<span class="litera">'+lit[i]+'</span><span>'+E(o.x)+'</span></button>';
   }).join('');
   var extra=p.ceas?'<div style="display:flex;justify-content:center">'+ceasSVG(p.ceas.h,p.ceas.m)+'</div>':'';
-  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+extra+'<div class="optiuni">'+but+'</div>'+blocFeedback(),
+  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+extra+tabla(p)+'<div class="optiuni">'+but+'</div>'+blocFeedback(),
           p:blocActiuni()};
 }
 function raspAlege(i){
@@ -1272,7 +1732,7 @@ function partHarta(p){
     }
   }
   cel+='</div>';
-  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+'<div class="zona-harta">'+cel+rozaVant()+'</div>'+blocFeedback(),
+  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+tabla(p)+'<div class="zona-harta">'+cel+rozaVant()+'</div>'+blocFeedback(),
           p:blocActiuni()};
 }
 function raspHarta(id){
@@ -1290,7 +1750,7 @@ function partCod(p){
   var extra='<button class="buton linistit" onclick="stergeCod()"'+(A.rezolvat?' disabled':'')+'>⌫</button>'+
     '<button class="buton" onclick="verificaCod()"'+(A.rezolvat||A.buf.length<n?' disabled':'')+'>🔓 Verifică</button>'+
     (p.jurnal?'<button class="buton linistit" onclick="jurnal()">📖 Jurnal</button>':'');
-  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+cifru+
+  return {c:vorbitor(p.cine,'<p class="intrebare">'+E(p.q)+'</p>')+tabla(p)+cifru+
       '<div class="afisaj">'+slots+'</div><div class="taste'+(pool.length>6?' late':'')+'">'+taste+'</div>'+blocFeedback(),
     p:blocActiuni(extra)};
 }
@@ -1368,7 +1828,7 @@ function partPremiu(){
     if(I.obiect&&S.obiecte.map(function(o){ return o.n; }).indexOf(I.obiect.n)<0) S.obiecte.push(I.obiect);
     if(I.indiciu&&S.indicii.map(function(c){ return c.poz; }).indexOf(I.indiciu.poz)<0) S.indicii.push(I.indiciu);
     S.dub+=8; sPremiu(); confetti(); salveaza();
-    spune([textPrimit(I.obiect.n),I.indiciu?I.indiciu.text:'']);
+    spune([textPrimit(I.obiect.n),I.indiciu?(I.indiciu.voce||I.indiciu.text):'']);
   }
   return {c:'<div style="text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center">'+
       '<div style="font-size:clamp(34px,7vh,56px);line-height:1">'+I.obiect.ic+'</div>'+
@@ -1413,7 +1873,7 @@ function jurnal(){
   }).join('');
   fereastra(
     '<div class="eticheta">Jurnal de bord</div><h2 class="titlu" style="font-size:clamp(1.05rem,2.6vh,1.4rem)">'+E(S.nume)+' '+S.av+'</h2>'+
-    '<p class="mica">'+(S.niv==='mus'?'Mus de punte (clasele 1–2)':'Căpitan (clasele 3–4)')+' · 🪙 '+S.dub+' dubloni</p><hr class="val">',
+    '<p class="mica">'+(S.niv==='mus'?'Mus de punte (clasele 1–2)':'Căpitan (clasele 3–4)')+' · 🪙 '+S.dub+' dubloni · Lumea '+(S.lume+1)+': '+E(numeLume(S.lume))+'</p><hr class="val">',
     '<div><div class="eticheta">Codul lacătului final</div><div class="afisaj" style="justify-content:flex-start;margin-top:5px">'+slotsCod+'</div>'+
       '<p class="mica">Cifrele stau în ordinea pozițiilor: 1, 2, 3, 4, 5.</p></div>'+
     '<div><div class="eticheta">Indicii adunate</div><div class="indicii" style="margin-top:5px">'+lista+'</div></div>'+
@@ -1443,9 +1903,11 @@ function ecranFinal(){
   var min=Math.max(1,Math.round((Date.now()-S.start)/60000));
   var ins=insigne(), cast=ins.filter(function(b){ return b.castigat; });
   var tot=0,ok=0; for(var k in S.st){ tot+=S.st[k].t; ok+=S.st[k].ok; }
-  var cap='<div class="eticheta">Diploma de pirat</div>'+
+  var comoara=INSULE[INSULE.length-1].obiect;
+  var cap='<div class="eticheta">Diploma de pirat · Lumea '+(S.lume+1)+'</div>'+
     '<h1 class="titlu" style="font-size:clamp(1.2rem,3.2vh,1.9rem)">'+E(S.nume)+' '+S.av+'</h1>'+
-    '<p class="subtitlu">a găsit Comoara Căpitanului Barbă-Sură, trecând prin toate cele cinci insule ale Mărilor Uitate.</p><hr class="val">';
+    '<p class="subtitlu">'+(S.lume?'a găsit '+E(comoara.n)+', trecând prin toate cele șase insule din '+E(numeLume(S.lume))+'.'
+      :'a găsit Comoara Căpitanului Barbă-Sură, trecând prin toate cele cinci insule ale Mărilor Uitate.')+'</p><hr class="val">';
   var corp='<div class="stat">'+
       '<div><b>'+ok+'/'+tot+'</b><span>probe din prima</span></div>'+
       '<div><b>'+S.dub+'</b><span>dubloni</span></div>'+
@@ -1457,17 +1919,18 @@ function ecranFinal(){
       ins.map(function(b){ return '<span class="insigna'+(b.castigat?'':' gol')+'">'+b.ic+' '+b.n+'</span>'; }).join('')+'</div></div>'+
     '<div class="verdict info"><span class="sm">🧔</span><div><b>Ultimele cuvinte ale căpitanului</b>'+
       'Aurul se cheltuie într-o vară. Mintea care întreabă «de ce?» și care citește până la capăt nu ți-o ia nimeni niciodată. Drum bun, '+E(S.nume)+'.</div></div>';
-  var pod='<button class="buton" onclick="dinNou()">🔁 Joacă din nou</button>'+
+  var pod='<button class="buton" onclick="mergiLa(\'lumi\')">🌍 Altă lume</button>'+
+    '<button class="buton linistit" onclick="dinNou()">🔁 Joacă din nou</button>'+
     '<button class="buton linistit" onclick="altNivel()">'+(S.niv==='mus'?'🧭 Nivelul Căpitan':'⛵ Nivelul Mus')+'</button>'+
     '<button class="buton linistit" onclick="jurnal()">📖 Jurnal</button>';
   return foaie(cap,corp,pod);
 }
 function dinNou(){ resetJoc(S.niv); }
 function altNivel(){ resetJoc(S.niv==='mus'?'cap':'mus'); }
+/* reia de la zero doar lumea deschisă; celelalte lumi și dublonii rămân */
 function resetJoc(niv){
-  var n=S.nume,a=S.av,v=S.voce,vn=S.vociNume,su=S.sunet;
-  stergeSalvare(); S=stareNoua();
-  S.nume=n; S.av=a; S.niv=niv; S.voce=v; S.vociNume=vn; S.sunet=su; S.ecran='chart';
+  var q=progNou(); for(var k in q) S[k]=q[k];
+  S.niv=niv; S.ecran='chart';
   salveaza(); render();
 }
 
@@ -1477,6 +1940,7 @@ function render(){
   if(S.ecran==='intro') c=ecranIntro();
   else if(S.ecran==='setup') c=ecranSetup();
   else if(S.ecran==='chart') c=ecranHarta();
+  else if(S.ecran==='lumi') c=ecranLumi();
   else if(S.ecran==='joc') c=ecranJoc();
   else if(S.ecran==='final') c=ecranFinal();
   app().innerHTML=bara()+c;

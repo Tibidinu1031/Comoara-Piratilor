@@ -29,12 +29,12 @@ if(!prolog) throw new Error('nu găsesc TEXT_PROLOG');
 const ctx=vm.createContext({});
 vm.runInContext(comun+'\n'+date+'\n'+prolog,ctx,{filename:'index.html'});
 
-const brute=[]
-  .concat(ctx.texteDin(ctx.INSULE))
-  .concat([ctx.TEXT_PROLOG])
-  .concat(Object.keys(ctx.NAR_FIXE).map(k=>ctx.NAR_FIXE[k]))
-  .concat(ctx.INSULE.map(I=>I.obiect&&ctx.textPrimit(I.obiect.n)))
-  .filter(Boolean);
+let brute=[ctx.TEXT_PROLOG].concat(Object.keys(ctx.NAR_FIXE).map(k=>ctx.NAR_FIXE[k]));
+for(let k=0;k<ctx.NR_LUMI;k++){
+  const L=ctx.lumea(k);
+  brute=brute.concat(ctx.texteDin(L)).concat(L.map(I=>I.obiect&&ctx.textPrimit(I.obiect.n)));
+}
+brute=brute.filter(Boolean);
 
 const texte={};
 for(const t of brute){
